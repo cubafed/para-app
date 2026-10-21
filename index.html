@@ -4,36 +4,48 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Пара</title>
+<link rel="preload" href="loader.webp" as="image">
 <style>
-  html, body { margin: 0; height: 100%; background: #DA2227; color: #fff; font: 600 16px/1.4 system-ui, -apple-system, sans-serif; }
-  body { display: grid; place-items: center; text-align: center; padding: 24px; box-sizing: border-box; }
-  b { display: block; font-size: 30px; margin-bottom: 8px; }
-  button { margin-top: 18px; height: 46px; padding: 0 22px; border: 0; border-radius: 14px; background: #fff; color: #DA2227; font: 800 15px system-ui; }
+@font-face { font-family: "Geologica"; src: url(geologica-cyrillic.woff2) format("woff2"); font-weight: 300 900; font-display: swap; unicode-range: U+0400-045F; }
+@font-face { font-family: "Golos"; src: url(golos-text-cyrillic.woff2) format("woff2"); font-weight: 400 900; font-display: swap; unicode-range: U+0400-045F; }
+html, body { margin: 0; height: 100%; }
+.boot { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 24px; text-align: center; color: #fff;
+  background: radial-gradient(120% 80% at 50% 0%, #EC3134 0%, #DA2227 45%, #A8181C 100%); }
+.boot img { width: 168px; height: 168px; object-fit: contain; filter: drop-shadow(0 16px 20px rgba(44,32,24,.35)); animation: bootbob .9s cubic-bezier(.4,0,.6,1) infinite alternate; transform-origin: 50% 90%; }
+.bw { font: 800 40px/1 "Geologica", "Golos", system-ui, sans-serif; letter-spacing: -.03em; display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; }
+.bw::after { content: ""; width: 11px; height: 11px; border-radius: 50%; background: #FCCAA7; transform: translateY(-11px); }
+p { margin: 6px 0 0; min-height: 22px; font: 600 15px/1.4 "Golos", system-ui, sans-serif; color: #FFE1D6; transition: opacity .25s; }
+.bar { width: 150px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.22); overflow: hidden; margin-top: 14px; }
+.bar i { display: block; width: 40%; height: 100%; border-radius: 3px; background: #fff; animation: bootbar 1.1s cubic-bezier(.6,0,.4,1) infinite; }
+button { margin-top: 18px; height: 46px; padding: 0 22px; border: 0; border-radius: 14px; background: #fff; color: #DA2227; font: 800 15px "Golos", system-ui, sans-serif; }
+@keyframes bootbob { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(-16px) rotate(3deg) scale(.98, 1.03); } }
+@keyframes bootbar { from { transform: translateX(-110%); } to { transform: translateX(260%); } }
+@media (prefers-reduced-motion: reduce) { .boot img, .bar i { animation: none; } }
 </style>
 </head>
 <body>
-<div id="m"><b>Пара</b>Открываю…</div>
+<div class="boot"><img id="img" src="loader.webp" alt=""><span class="bw">Пара</span><p id="q">Бужу сервер на Маке…</p><span class="bar" id="bar"><i></i></span><span id="x"></span></div>
 <script>
 /* Постоянный адрес мини-приложения. Сам сервер живёт на Маке за туннелем, адрес которого меняется;
    туннель пишет текущий адрес в url.json этого репозитория, а здесь мы просто переходим туда,
-   сохраняя ?параметры и #tgWebAppData от Telegram. */
+   сохраняя ?параметры и #tgWebAppData от Telegram. Экран — тот же, что у загрузки приложения. */
 const REPO = "cubafed/para-app";
-async function current() {
-  try {  // API отдаёт свежий файл сразу, без ожидания пересборки Pages
-    const r = await fetch(`https://api.github.com/repos/${REPO}/contents/url.json?t=${Date.now()}`, { headers: { Accept: "application/vnd.github.raw+json" }, cache: "no-store" });
-    if (r.ok) return (await r.json()).url;
-  } catch (e) {}
-  const r = await fetch(`url.json?t=${Date.now()}`, { cache: "no-store" });
-  return (await r.json()).url;
-}
-(async () => {
+const withTimeout = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error("timeout")), ms))]);
+const viaApi = () => withTimeout(fetch(`https://api.github.com/repos/${REPO}/contents/url.json?t=${Date.now()}`,
+  { headers: { Accept: "application/vnd.github.raw+json" }, cache: "no-store" }).then((r) => r.ok ? r.json() : Promise.reject(r.status)), 4000);
+const viaPages = () => withTimeout(fetch(`url.json?t=${Date.now()}`, { cache: "no-store" }).then((r) => r.ok ? r.json() : Promise.reject(r.status)), 6000);
+async function go() {
   try {
-    const url = await current();
+    const { url } = await Promise.any([viaApi(), viaPages()]);  // кто первый ответит
     location.replace(url.replace(/\/$/, "") + "/" + location.search + location.hash);
   } catch (e) {
-    document.getElementById("m").innerHTML = `<b>Пара</b>Сервер сейчас недоступен — Мак выключен или нет сети.<br><button onclick="location.reload()">Ещё раз</button>`;
+    document.getElementById("q").textContent = "Сервер «Пары» сейчас недоступен — Мак выключен или без сети.";
+    document.getElementById("bar").remove();
+    document.getElementById("img").src = "loader-sad.webp";
+    document.getElementById("x").innerHTML = `<button onclick="location.reload()">Ещё раз</button>`;
   }
-})();
+}
+go();
 </script>
 </body>
 </html>
