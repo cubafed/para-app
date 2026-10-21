@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Пара</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #DA2227; color: #fff; font: 600 16px/1.4 system-ui, -apple-system, sans-serif; }
+  body { display: grid; place-items: center; text-align: center; padding: 24px; box-sizing: border-box; }
+  b { display: block; font-size: 30px; margin-bottom: 8px; }
+  button { margin-top: 18px; height: 46px; padding: 0 22px; border: 0; border-radius: 14px; background: #fff; color: #DA2227; font: 800 15px system-ui; }
+</style>
+</head>
+<body>
+<div id="m"><b>Пара</b>Открываю…</div>
+<script>
+/* Постоянный адрес мини-приложения. Сам сервер живёт на Маке за туннелем, адрес которого меняется;
+   туннель пишет текущий адрес в url.json этого репозитория, а здесь мы просто переходим туда,
+   сохраняя ?параметры и #tgWebAppData от Telegram. */
+const REPO = "cubafed/para-app";
+async function current() {
+  try {  // API отдаёт свежий файл сразу, без ожидания пересборки Pages
+    const r = await fetch(`https://api.github.com/repos/${REPO}/contents/url.json?t=${Date.now()}`, { headers: { Accept: "application/vnd.github.raw+json" }, cache: "no-store" });
+    if (r.ok) return (await r.json()).url;
+  } catch (e) {}
+  const r = await fetch(`url.json?t=${Date.now()}`, { cache: "no-store" });
+  return (await r.json()).url;
+}
+(async () => {
+  try {
+    const url = await current();
+    location.replace(url.replace(/\/$/, "") + "/" + location.search + location.hash);
+  } catch (e) {
+    document.getElementById("m").innerHTML = `<b>Пара</b>Сервер сейчас недоступен — Мак выключен или нет сети.<br><button onclick="location.reload()">Ещё раз</button>`;
+  }
+})();
+</script>
+</body>
+</html>
