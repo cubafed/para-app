@@ -428,7 +428,7 @@ body.hero-on .mast { border-radius: 0; }
 .wxt .t-big { font-size: 44px; }
 .tile .chk { padding: 8px 0; border-bottom: 1px solid var(--hair); }
 .tile .chk:last-child { border-bottom: 0; }
-.tile.skel-t { animation: pulse 1.2s ease-in-out infinite alternate; }
+.tile.skel-t .t-big { animation: pulse 1.2s ease-in-out infinite alternate; opacity: .35; }
 
 /* --- лента дня --- */
 .plist { background: var(--card); border-radius: 26px; box-shadow: var(--shadow); padding: 6px 0; overflow: hidden; }
@@ -587,6 +587,8 @@ body.hero-on .mast { border-radius: 0; }
 .wkt b { display: block; font: 800 17px/1.2 var(--display); }
 .wkt span { font: 600 12px var(--text); color: var(--red-text); }
 .wstrip { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 6px; position: sticky; top: 0; z-index: 5; padding: 8px 0 10px; background: var(--paper); }
+.wstrip::after { content: ""; position: absolute; left: -16px; right: -16px; top: 100%; height: 18px; background: linear-gradient(var(--paper), transparent); pointer-events: none; }
+.wstrip::before { content: ""; position: absolute; inset: 0 -16px; background: var(--paper); z-index: -1; }
 .wchip { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0 7px; border-radius: 16px; background: var(--card); box-shadow: var(--shadow); min-height: 64px; }
 .wchip span { font: 700 11px var(--text); color: var(--ink-2); text-transform: uppercase; }
 .wchip b { font: 800 19px/1 var(--display); }
@@ -636,6 +638,51 @@ body.hero-on .mast { border-radius: 0; }
 .gcard .set:last-child, .gcard .disc:last-child { border-bottom: 0; }
 .gcard .set.sub { background: var(--paper); min-height: 56px; }
 .gcard .disc { padding: 12px 14px; }
+.mecard { margin-top: 14px; }
+.set.link { width: 100%; text-align: left; }
+.set.link .ic { width: 38px; height: 38px; border-radius: 12px; background: var(--paper-2); display: grid; place-items: center; flex: none; color: var(--red-text); }
+.set.link .l span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.set.link > .i:last-child { color: var(--ink-2); flex: none; }
+.mesec .mopt { padding: 14px 0 6px; border-bottom: 1px solid var(--hair); }
+.mesec .mopt:last-child { border-bottom: 0; }
+.mesec .opt-h { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.mesec .mopt.off .opt-h { margin-bottom: 8px; }
+.mesec .opt-h .l { flex: 1; min-width: 0; }
+.mesec .opt-h .l b { display: block; font-weight: 700; }
+.mesec .opt-h .l span { font-size: 12.5px; color: var(--ink-2); }
+.ochips { margin: 0 -20px; padding: 2px 20px 8px; scrollbar-width: none; }
+.ochips::-webkit-scrollbar { display: none; }
+.mesec details.more { margin-top: 6px; }
+.mesec details.more > summary { list-style: none; cursor: pointer; padding: 14px 0 4px; font: 700 13px var(--text); color: var(--red-text); }
+.mesec details.more > summary::-webkit-details-marker { display: none; }
+.mesec details.more > summary::after { content: " ›"; }
+.mesec details.more[open] > summary::after { content: " ⌄"; }
+.mesec .set { border-bottom: 1px solid var(--hair); }
+.mesec .note { margin-top: 12px; }
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 14px; }
+.kpi { background: var(--card); border-radius: 14px; padding: 10px 8px; text-align: center; }
+.kpi b { display: block; font: 400 22px/1 var(--num); color: var(--ink); }
+.kpi span { font-size: 11px; color: var(--ink-2); }
+.st-h { font: 800 15px var(--display); margin: 22px 0 8px; display: flex; justify-content: space-between; align-items: baseline; }
+.st-h small { font: 600 12px var(--text); color: var(--ink-2); }
+.bars { position: relative; display: flex; align-items: flex-end; gap: 2px; height: 140px; padding: 14px 0 20px; border-bottom: 1px solid var(--hair); }
+.bars > em { position: absolute; top: 0; left: 0; font: 600 11px var(--text); color: var(--ink-2); font-style: normal; }
+.bar { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative; }
+.bar i { display: block; width: 70%; max-width: 18px; background: var(--red); border-radius: 4px 4px 0 0; }
+.bar.on i { background: var(--ink); }
+.bar span { position: absolute; bottom: -18px; font: 600 10px var(--text); color: var(--ink-2); }
+#sttip { margin-top: 10px; min-height: 18px; }
+.fun { margin-bottom: 10px; }
+.fun-l { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+.fun-l b { font-weight: 800; }
+.fun-t { height: 10px; background: var(--paper-2); border-radius: 5px; overflow: hidden; }
+.fun-t i { display: block; height: 100%; background: var(--red); border-radius: 5px; }
+.st-tbl > div { display: grid; grid-template-columns: 1fr 44px 44px; gap: 8px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--hair); font-size: 13.5px; }
+.st-tbl > div:last-child { border-bottom: 0; }
+.st-tbl b { text-align: right; font-weight: 800; }
+.st-tbl em { text-align: right; font-style: normal; color: var(--ink-2); }
+.st-tbl .z { color: var(--ink-2); }
+.st-tbl .pill { font-style: normal; }
 
 /* --- шторки --- */
 .sheet { padding-top: 26px; }
@@ -658,6 +705,31 @@ body.hero-on .mast { border-radius: 0; }
 .onb .onb-say .lead { color: #FFE9E2; margin: 0; font: 600 14.5px/1.35 var(--text); }
 .onb .body { padding-top: 30px; }
 .onb .body .set { background: var(--card); border-radius: 18px; box-shadow: var(--shadow); border-bottom: 0; padding: 12px 14px; margin-top: 8px; }
+.intro { min-height: 100%; display: flex; flex-direction: column; background: linear-gradient(180deg, var(--red), var(--red-2)); color: #fff; padding: calc(14px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom)); }
+.in-top { display: flex; align-items: center; justify-content: space-between; height: 40px; max-width: 520px; width: 100%; margin: 0 auto; }
+.in-skip { color: #FFE1D6; font: 700 14px var(--text); padding: 8px 0 8px 12px; }
+.in-card { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; max-width: 420px; margin: 0 auto; padding: 20px 0; }
+.in-card img { width: 210px; height: 210px; object-fit: contain; filter: drop-shadow(0 18px 24px rgba(44,32,24,.35)); margin-bottom: 18px; }
+.in-card h1 { font: 800 34px/1.05 var(--display); margin: 0 0 12px; color: #fff; letter-spacing: -.02em; }
+.in-card p { margin: 0; font: 600 16px/1.4 var(--text); color: #FFE9E2; max-width: 32ch; }
+.in-dots { display: flex; justify-content: center; gap: 6px; margin: 0 0 18px; }
+.in-dots i { width: 7px; height: 7px; border-radius: 4px; background: rgba(255,255,255,.35); transition: width .3s var(--e-out); }
+.in-dots i.on { width: 22px; background: #fff; }
+.in-cta { max-width: 520px; width: 100%; margin: 0 auto; }
+.btn.inv { background: #fff; color: var(--red-text); }
+.roles { display: grid; gap: 10px; }
+.role { background: #fff; color: var(--ink); border-radius: 22px; padding: 16px 18px; text-align: left; box-shadow: 0 10px 24px rgba(44,32,24,.25); }
+.role b { display: block; font: 800 19px var(--display); margin-bottom: 3px; }
+.role span { font-size: 13.5px; color: var(--ink-2); }
+.role:active { transform: scale(.98); }
+.ocard { display: block; width: 100%; text-align: left; background: var(--card); border-radius: 20px; box-shadow: var(--shadow); padding: 14px 16px 6px; margin-top: 10px; }
+.ocard > b { display: block; font-weight: 700; }
+.ocard > span { display: block; font-size: 12.5px; color: var(--ink-2); margin-bottom: 10px; }
+.ocard .ochips { margin: 0 -16px; padding: 2px 16px 10px; }
+.ocard.ostep { padding-bottom: 14px; position: relative; padding-right: 48px; }
+.ocard.ostep > span { margin-bottom: 0; }
+.ocard.ostep::after { content: "›"; position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font: 700 24px var(--text); color: var(--red-text); }
+.ocard.ostep.done::after { content: "✓"; }
 .onb .cta { background: var(--paper); }
 .boot { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 24px; text-align: center; color: #fff;
   background: radial-gradient(120% 80% at 50% 0%, #EC3134 0%, #DA2227 45%, #A8181C 100%); transition: opacity .4s ease, transform .4s ease; }
@@ -734,6 +806,10 @@ button:not(:disabled):active, .tile:active, .wday:active { transform: scale(.97)
   <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
   <symbol id="i-eye" viewBox="0 0 24 24"><path d="M3 3l18 18M2 12s3.6-6 10-6c1.7 0 3.2.4 4.5 1M22 12s-3.6 6-10 6c-1.7 0-3.2-.4-4.5-1"/></symbol>
   <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/></symbol>
+  <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 13H6zM9 8V6a3 3 0 0 1 6 0v2"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
   <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.1 7-12a7 7 0 0 0-14 0c0 5.9 7 12 7 12z"/><rect x="10" y="7" width="4" height="4"/></symbol>
   <symbol id="w-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></symbol>
   <symbol id="w-part" viewBox="0 0 24 24"><circle cx="8.5" cy="8.5" r="3.5"/><path d="M8.5 2v1.5M2 8.5h1.5M3.9 3.9 5 5"/><path d="M7 19h11a3.5 3.5 0 0 0 0-7 5 5 0 0 0-9.6 1.5A3 3 0 0 0 7 19z"/></symbol>
@@ -818,7 +894,11 @@ const hhmm = (m) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m %
 let clockOffset = 0;
 const now = () => Date.now() + clockOffset;
 const nowMinMsk = () => { const d = new Date(now() + 3 * 3600e3); return d.getUTCHours() * 60 + d.getUTCMinutes(); };
-const audNo = (a) => (String(a || "").match(/(\d{3,4}[а-яa-z]?)/i) || [, String(a || "").split("/")[0].slice(0, 7)])[1];
+const audNo = (a) => { a = String(a || ""); const m = a.match(/(\d{3,4}[а-яa-z]?)/i); if (m) return m[1];
+  const t = (a.split("/")[1] || a).replace(/^ауд\.?\s*/i, "").trim(); return t.length > 7 ? t.split(/\s/)[0].slice(0, 7) : t; };
+/* «ул. Касаткина 15, строение 1; 17, строение 1» → «Касаткина 15», «4-й Вешняковский проезд, 4» → «Вешняковский, 4» */
+const bshort = (b) => String(b || "").split(";")[0].replace(/,?\s*(строение|стр\.|корпус|корп\.)\s*\d+/gi, "").replace(/^(ул\.|улица)\s*/i, "")
+  .replace(/^\d+-й\s+/, "").replace(/\s+(проезд|проспект|пр-т|переулок|пер\.|шоссе|бульвар|б-р)(?=,|\s|$)/i, "").trim();
 function abbr(name) {
   const words = name.split(/[\s-]+/).filter(Boolean);
   if (words.length === 1) return name.slice(0, 5);
@@ -951,7 +1031,7 @@ function leaveHtml(day) {
   else if (day.date === S.today) return `<div class="leave compact"><div class="lbl">выход был в ${lv.at} · ты на парах</div></div>`;
   else lbl = `<div class="lbl">выход ${relDay(day.date)}</div>`;
   return `<div class="leave ${cls}"><div class="big">${lv.at}</div>${lbl}
-    <div class="sub">дорога ${mins(lv.travel)} + запас ${S.me.buffer} мин<br>${esc(lv.building || "")}</div></div>`;
+    <div class="sub">дорога ${mins(lv.travel)} + запас ${S.me.buffer} мин<br>${esc(bshort(lv.building))}</div></div>`;
 }
 function weatherHtml(w) {
   if (!w) return "";
@@ -964,7 +1044,7 @@ function nextHtml(h) {
   const big = left < 60 ? Math.round(left) : mins(left).replace(" мин", "");
   const what = changeSummary(h, n);
   return `<button class="next" data-act="lesson" data-oid="${n.oid}" data-date="${n.date}" style="width:100%;text-align:left"><div class="grow"><div class="k">${h.current.length ? "дальше" : "следующая"} · ${n.begin}</div>
-    <div class="v">ауд ${esc(audNo(n.auditorium) || "—")}</div><div class="s">${esc(n.discipline)}${h.transfer ? ` · ${esc(n.building || "другой корпус")}, дорога ~${mins(h.transfer)}` : ""}</div>
+    <div class="v">ауд ${esc(audNo(n.auditorium) || "—")}</div><div class="s">${esc(n.discipline)}${h.transfer ? ` · ${esc(bshort(n.building) || "другой корпус")}, дорога ~${mins(h.transfer)}` : ""}</div>
     ${what ? `<div class="x">${what}</div>` : ""}</div>
     <div class="eta">${big}<small>${left < 60 ? "мин" : "до пары"}</small></div></button>`;
 }
@@ -1112,11 +1192,11 @@ const HLBL = { window: "до начала пары", leave: "до выхода",
 function heroSub(day, p) {
   const n = p.next, nl = n && n.l;
   switch (p.k) {
-    case "leave": return `${shortDisc(nl.discipline)} в ${nl.begin} · ${day.leave.building || "корпус"} · дорога ${mins(day.leave.travel)}`;
+    case "leave": return `${shortDisc(nl.discipline)} в ${nl.begin} · ${bshort(day.leave.building) || "корпус"} · дорога ${mins(day.leave.travel)}`;
     case "late": case "before": return `${shortDisc(nl.discipline)} в ${nl.begin} · ауд ${aud(n)}`;
-    case "class": return `${shortDisc(p.cur.l.discipline)} · ауд ${aud(p.cur)}${n ? ` · дальше ${aud(n)}` : ""}`;
+    case "class": return `${shortDisc(p.cur.l.discipline)} · ауд ${aud(p.cur)}${n ? ` · дальше ${aud(n) === aud(p.cur) ? "там же" : aud(n)}` : ""}`;
     case "break": case "transfer": return `${shortDisc(nl.discipline)} · ауд ${aud(n)} · в ${nl.begin}`;
-    case "window": return p.tr ? `${nl.building || "Другой корпус"} · ${shortDisc(nl.discipline)} в ${nl.begin}` : `Дальше ${shortDisc(nl.discipline)} в ${nl.begin}, ауд ${aud(n)}`;
+    case "window": return p.tr ? `${bshort(nl.building) || "Другой корпус"} · ${shortDisc(nl.discipline)} в ${nl.begin}` : `Дальше ${shortDisc(nl.discipline)} в ${nl.begin}, ауд ${aud(n)}`;
     case "done": return `Свободен с ${p.last.l.end}.${nextDayHint(day.date)}`;
     default: { const x = S.home?.next?.[0]; return x ? `Следующая — ${relDay(x.date)} в ${x.begin}, ауд ${audNo(x.auditorium) || "—"}` : "В ближайшие две недели пар нет"; }
   }
@@ -1188,11 +1268,13 @@ async function ensureExams() {
   S.examsLoading = true;
   try { S.exams = (await api("/api/exams")).exams; } catch (e) { S.exams = null; }
   S.examsLoading = false;
-  const t = $("#t-ses"); if (t) t.outerHTML = sessionTile();
+  const t = $("#t-ses"); if (!t) return;
+  if (S.exams?.length) t.outerHTML = sessionTile();
+  else { const day = S.days[S.today], tl = t.closest(".tiles"); if (day && tl) tl.outerHTML = tilesHtml(day, phaseOf(day)); }
 }
 function sessionTile() {
-  if (S.exams === undefined) return `<div class="tile ses skel-t" id="t-ses"><span class="t-lbl">До сессии</span><span class="t-big">…</span></div>`;
-  if (!S.exams || !S.exams.length) return `<div class="tile ses" id="t-ses"><span class="t-lbl">Сессия</span><span class="t-big">—</span><span class="t-sub">${S.exams ? "В ruz пока нет зачётов и экзаменов" : "Не загрузилось"}</span></div>`;
+  if (S.exams === undefined) return `<div class="tile skel-t" id="t-ses"><span class="t-lbl">До сессии</span><span class="t-big">…</span></div>`;
+  if (!S.exams || !S.exams.length) return "";
   const e = S.exams[0];
   return `<button class="tile ses" id="t-ses" data-act="exams"><img class="peek" src="${STK(31)}" alt=""><span class="t-lbl">До сессии</span>
     <span class="t-big">${e.days ? `${e.days}<small>${plural(e.days, "день", "дня", "дней")}</small>` : "Сегодня"}</span>
@@ -1222,11 +1304,12 @@ function tilesHtml(day, p) {
   const nl = !n ? "Дальше" : n.date !== S.today ? cap(relDay(n.date)) : ["leave", "late", "before"].includes(p.k) ? "Первая" : "Дальше";
   out.push(n ? `<button class="tile ticket" data-act="lesson" data-oid="${n.oid}" data-date="${n.date}"><span class="perf"></span><span class="t-lbl">${nl}</span>
       <span class="t-big">${n.begin}</span><span class="t-sub">${esc(shortDisc(n.discipline))} · ${esc(n.kind)}</span>
-      <span class="t-rm"><b>${esc(audNo(n.auditorium) || "—")}</b><span>${esc(n.building || "")}</span></span></button>`
+      <span class="t-rm"><b>${esc(audNo(n.auditorium) || "—")}</b><span>${esc(bshort(n.building))}</span></span></button>`
     : `<div class="tile ticket"><span class="perf"></span><span class="t-lbl">Дальше</span><span class="t-big">—</span><span class="t-sub">Две недели без пар</span></div>`);
-  out.push(sessionTile());
-  const w = h?.weather;
-  out.push(hwTile(!w));
+  // нечётное число половинок → ДЗ на всю ширину; пустую «Сессию» не показываем
+  const ses = sessionTile(), w = h?.weather;
+  if (ses) out.push(ses);
+  out.push(hwTile((1 + !!ses + !!w) % 2 === 0));
   const ann = S.feed?.announcements?.find((x) => !x.read);
   const items = h?.plan?.date === day.date ? (h.checklist || []).flatMap((c) => c.items) : [];
   if (w) out.push(`<div class="tile wxt">${icon(WX[w.emoji] || "w-cloud")}<span class="t-lbl">Погода</span>
@@ -1247,7 +1330,7 @@ function hwTile(full) {
   if (!f.chats.length) return `<button class="tile hwt ${fc}" data-goto="group"><img class="peek" src="${STK(10)}" alt=""><span class="t-lbl">ДЗ группы</span>
     <span class="t-sub" style="margin-top:auto">Добавь Ильича в беседу группы — буду собирать всё с #дз</span><span class="t-btn">Как?</span></button>`;
   const n = f.homework.length, last = f.homework[0];
-  return `<button class="tile hwt ${fc}" data-goto="group"><img class="peek" src="${STK(10)}" alt=""><span class="t-lbl">ДЗ группы</span>
+  return `<button class="tile hwt ${fc}" data-goto="group"><span class="t-lbl">ДЗ группы</span>
     <span class="t-big">${n}</span><span class="t-sub">${last ? esc(last.text.slice(0, 60) || "вложение") : "Пока пусто — пишите #дз в беседе"}</span></button>`;
 }
 
@@ -1467,12 +1550,12 @@ function pathHtml(day) {
       const st = lessonState(l);
       rows += `<button class="pl ${st === "next" ? "" : st}" data-act="lesson" data-oid="${l.oid}" data-date="${l.date}"><span class="tm">${l.begin}<small>${l.end}</small></span>
         <span class="nm">${esc(l.discipline)}<span class="pill ${HOT.has(l.tag) || l.replaces ? "red" : ""}">${st === "now" ? "сейчас" : l.replaces ? "изменение" : esc(l.kind)}</span>${(l.assess || []).map((a) => `<span class="pill as">📝 ${esc(a.label)}</span>`).join("")}</span>
-        <span class="rm">${esc(audNo(l.auditorium) || "—")}</span><span class="pp">${esc([l.lecturer, l.building].filter(Boolean).join(" · ") || " ")}</span>
+        <span class="rm">${esc(audNo(l.auditorium) || "—")}</span><span class="pp">${esc([l.lecturer, (!i || slots[i - 1].lessons[0].building !== l.building) && bshort(l.building)].filter(Boolean).join(" · ") || " ")}</span>
         ${(l.assess || []).filter((a) => a.note).map((a) => `<span class="pp asn">📝 ${esc(a.note)}</span>`).join("")}</button>`;
     }
     if (s.gap !== undefined) {
       const n = slots[i + 1].lessons[0], on = Date.parse(l.ends) <= now() && now() < Date.parse(n.starts) ? "now" : "";
-      if (s.transfer) rows += `<div class="plg ${on}"><img src="${STK(37)}" alt=""><span><b>переезд ~${mins(s.transfer)}</b> · ${esc(n.building || "другой корпус")}${s.transfer > s.gap ? " · выходи сразу" : ""}</span></div>`;
+      if (s.transfer) rows += `<div class="plg ${on}"><img src="${STK(37)}" alt=""><span><b>переезд ~${mins(s.transfer)}</b> · ${esc(bshort(n.building) || "другой корпус")}${s.transfer > s.gap ? " · выходи сразу" : ""}</span></div>`;
       else if (s.gap >= 30) rows += `<div class="plg ${on}"><span><b>окно ${mins(s.gap)}</b></span></div>`;
       else rows += `<div class="plg ${on}"><img src="${STK(16)}" alt=""><span><b>перемена ${s.gap} мин</b></span></div>`;
     }
@@ -1699,15 +1782,15 @@ function renderWeek() {
       <em>${n} ${plural(n, "пара", "пары", "пар")} · ${first}–${last}</em></div>
       ${d.slots.map((s) => { const l = s.lessons[0], par = s.lessons.length > 1, hot = s.lessons.some((x) => HOT.has(x.tag));
         return `<div class="wl ${d.date === S.today && lessonState(l) !== "next" ? lessonState(l) : ""}"><span class="tm">${l.begin}</span><span class="nm">${esc(l.discipline)}${hot ? `<i class="pill red">${esc(l.kind)}</i>` : ""}${(l.assess || []).map((a) => `<i class="pill as">📝 ${esc(a.label)}</i>`).join("")}${par ? `<i class="pill">${s.lessons.length} вар.</i>` : ""}</span><span class="rm">${par ? "?" : esc(audNo(l.auditorium) || "—")}</span></div>`; }).join("")}
-      ${d.leave ? `<div class="wd-f">выход из дома в <b>${d.leave.at}</b> · ${esc(d.leave.building || "")}</div>` : ""}</button>`;
+      ${d.leave ? `<div class="wd-f">выход из дома в <b>${d.leave.at}</b> · ${esc(bshort(d.leave.building))}</div>` : ""}</button>`;
   }).join("");
   $("#v-week").innerHTML = html;
-  if (!S.wkScrolled && ws === monday(S.today)) { S.wkScrolled = true; const el = $(`#wd-${S.today}`); if (el && el.getBoundingClientRect().top > innerHeight * .6) scrollTo(0, scrollY + el.getBoundingClientRect().top - 130); }
+  if (!S.wkScrolled && ws === monday(S.today)) { S.wkScrolled = true; const el = $(`#wd-${S.today}`); if (el && el.getBoundingClientRect().top > innerHeight * .6) scrollTo(0, scrollY + el.getBoundingClientRect().top - 96); }
 }
 
 /* ---------- шторка ---------- */
-function openSheet(html) { $("#sheet").innerHTML = html; $("#sheet").classList.add("on"); $("#scrim").classList.add("on"); updateBack(); }
-function closeSheet() { $("#sheet").classList.remove("on"); $("#scrim").classList.remove("on"); updateBack(); }
+function openSheet(html, sec = null) { S.meSec = sec; $("#sheet").innerHTML = html; $("#sheet").classList.add("on"); $("#scrim").classList.add("on"); updateBack(); }
+function closeSheet() { S.meSec = null; $("#sheet").classList.remove("on"); $("#scrim").classList.remove("on"); updateBack(); }
 function findLesson(oid, date) {
   const pool = [...(S.days[date]?.slots.flatMap((s) => s.lessons) || []), ...(S.home ? [...S.home.current, ...S.home.next] : [])];
   return pool.find((x) => x.oid === oid);
@@ -1881,55 +1964,114 @@ async function openMe() {
   renderMe();
   try { await ensureChecklist(); S.hidden = (await api("/api/hidden")).rules; S.abs = (await api("/api/absences")).absences; } catch (e) { return fail(e); }
   if (S.tab === "me") renderMe();
+  if (DEV_USER && qs.get("sec")) meSec(qs.get("sec"));  // превью разделов для скриншотов
+}
+/* чипы вместо ±: текущее значение всегда среди вариантов */
+const MIN_OPTS = [10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 75, 90, 120];
+function chipRow(key, val, opts, fmt = (v) => `${v} мин`) {
+  const all = [...new Set([...opts, val])].filter((v) => v != null).sort((x, y) => (typeof x === "number" ? x - y : String(x).localeCompare(String(y))));
+  return `<div class="chips ochips">${all.map((v) => `<button class="${v === val ? "on" : ""}" data-chip="${key}" data-v="${v}">${fmt(v)}</button>`).join("")}</div>`;
+}
+const opt = (title, hint, ctl = "", body = "", off = false) =>
+  `<div class="mopt ${off ? "off" : ""}"><div class="opt-h"><div class="l"><b>${title}</b>${hint ? `<span>${hint}</span>` : ""}</div>${ctl}</div>${off ? "" : body}</div>`;
+const meRow = (sec, title, sum, ic) => `<button class="set link" data-act="mesec" data-sec="${sec}"><span class="ic">${icon(ic)}</span><div class="l"><b>${title}</b><span>${sum}</span></div>${icon("r")}</button>`;
+function meSummary() {
+  const m = S.me, on = [m.morning_on && "утро", m.pre_end_on && "конец пары", m.evening && `вечер ${m.evening}`, m.changes_on && "изменения", m.digest_on && "итоги недели"].filter(Boolean);
+  const pe = (S.checklist || []).reduce((n, d) => n + d.items.length, 0), ab = S.abs?.items?.reduce((n, x) => n + x.absent, 0);
+  return {
+    road: m.buildings.length ? m.buildings.map((b) => `${esc(bshort(b.name))}: ${b.minutes} мин`).join(" · ") : `до вуза ${m.default} мин`,
+    notify: on.length ? cap(on.join(", ")) : "всё выключено",
+    abs: S.abs === undefined ? "…" : !S.abs ? "найди себя в списке группы" : ab ? `Н ${ab} по журналу старосты` : "пропусков нет",
+    pe: !S.checklist ? "…" : S.checklist.length ? (pe ? `${pe} ${plural(pe, "вещь", "вещи", "вещей")} в списке` : "форма и кроссовки") : "физры пока нет",
+    hidden: !S.hidden ? "…" : S.hidden.length ? `скрыто: ${S.hidden.length}` : "ничего не скрыто",
+  };
 }
 function renderMe() {
   bootDone();
-  const m = S.me, el = $("#v-me");
-  const card = (title, rows, small = "") => `<h2 class="h2">${title}${small ? `<small>${small}</small>` : ""}</h2><div class="gcard">${rows}</div>`;
+  const m = S.me, el = $("#v-me"), su = meSummary();
   el.innerHTML = `
     <div class="me-hero"><img src="${STK(12)}" alt=""><div class="grow"><b>${esc(m.name || "Студент")}</b><span>${esc(m.group?.label || "группа не выбрана")} · расписание с ruz.fa.ru</span></div>
       <button class="btn sm" data-act="chgroup">Группа</button></div>
-
-    ${card("Дорога от дома", `${m.buildings.map((b) => `<div class="set"><div class="l"><b>${esc(b.name)}</b><span>${b.set ? "твоё время" : "по умолчанию"}</span></div>${stepper("t" + b.oid, b.minutes)}</div>`).join("")}
-      <div class="set"><div class="l"><b>Другие корпуса</b><span>если пара в новом месте</span></div>${stepper("default", m.default)}</div>
-      <div class="set"><div class="l"><b>Между корпусами</b><span>переезд в течение дня</span></div>${stepper("transfer", m.transfer)}</div>
-      <div class="set"><div class="l"><b>Запас</b><span>на лифты и задержки</span></div>${stepper("buffer", m.buffer, { max: 60 })}</div>`)}
-
-    ${card("Напоминания", `<div class="set"><div class="l"><b>Утро</b><span>время выхода, погода, пары</span></div>${sw("morning_on", m.morning_on)}</div>
-      ${m.morning_on ? `<div class="set sub"><div class="l"><b>За сколько до выхода</b></div>${stepper("lead", m.lead, { min: 5, max: 180 })}</div>` : ""}
-      <div class="set"><div class="l"><b>Перед концом пары</b><span>куда идти дальше</span></div>${sw("pre_end_toggle", m.pre_end_on)}</div>
-      ${m.pre_end_on ? `<div class="set sub"><div class="l"><b>За сколько до конца</b></div>${stepper("pre_end", m.pre_end, { min: 5, max: 30 })}</div>` : ""}
-      <div class="set"><div class="l"><b>План на завтра</b><span>вечером: пары и форма на физру</span></div>${sw("evening_toggle", !!m.evening)}</div>
-      ${m.evening ? `<div class="set sub"><div class="l"><b>Во сколько</b></div>${tstepper("evening", m.evening)}</div>` : ""}
-      <div class="set"><div class="l"><b>«Пар нет» утром</b><span>если всё отменили</span></div>${sw("nolessons_toggle", !!m.nolessons)}</div>
-      ${m.nolessons ? `<div class="set sub"><div class="l"><b>Во сколько</b></div>${tstepper("nolessons", m.nolessons)}</div>` : ""}
-      <div class="set"><div class="l"><b>Изменения расписания</b><span>отмены, переносы, аудитории</span></div>${sw("changes_on", m.changes_on)}</div>
-      <div class="set"><div class="l"><b>Итоги недели</b><span>в воскресенье вечером: пары, ДЗ, сессия</span></div>${sw("digest_on", m.digest_on)}</div>`)}
-
-    ${card("Посещаемость", S.abs === undefined ? `<div class="skel" style="margin:12px"></div>` : !S.abs ? `<div class="set"><div class="l"><b>Мои пропуски</b><span>отметь себя в списке группы — увидишь, что ставит староста</span></div><button class="btn sm ghost" data-act="claim-list">Найти себя</button></div>`
+    <div class="gcard mecard">${meRow("road", "Дорога", su.road, "pin")}${meRow("notify", "Уведомления", su.notify, "bell")}</div>
+    <div class="gcard mecard">${meRow("abs", "Посещаемость", su.abs, "check")}${meRow("pe", "Вещи на физру", su.pe, "bag")}${meRow("hidden", "Скрытые пары", su.hidden, "eye")}</div>
+    <div class="gcard mecard">
+      <div class="set"><div class="l"><b>Ильич без цензуры</b><span>крепкие словечки — только у тебя</span></div>${sw("raw", rawOn())}</div>
+      <div class="set"><div class="l"><b>Живой закреп</b><span>сверху в чате с ботом: что сейчас и что дальше</span></div>${sw("pin_on", m.pin_on)}</div>
+      ${meRow("more", "Календарь и погода", m.location ? "погода по твоей локации" : "подписка на расписание, локация", "cal")}
+      ${tg?.addToHomeScreen ? `<div class="set"><div class="l"><b>Иконка на экране «Домой»</b><span>открывать «Пару» как приложение</span></div><button class="btn sm ghost" data-act="home-screen">Добавить</button></div>` : ""}</div>
+    ${m.admin ? `<div class="gcard mecard">${meRow("stats", "Статистика", "видишь только ты", "chart")}</div>` : ""}
+    <div class="foot">«Пара» — независимый студенческий проект. Не официальный сервис Финуниверситета.</div>`;
+  if (S.meSec && $("#sheet").classList.contains("on")) meSec(S.meSec);
+}
+function meSec(sec) {
+  const m = S.me, keep = S.meSec === sec ? $("#sheet").scrollTop : 0;
+  S.meSec = sec;
+  const html = {
+    road: () => `<h4>Дорога</h4><div class="muted tiny">Сколько едешь от дома. По этому считаю, когда выходить.</div>
+      ${m.buildings.map((b) => opt(esc(bshort(b.name)), esc(b.name), "", chipRow("t" + b.oid, b.minutes, MIN_OPTS))).join("")}
+      ${opt("Другие корпуса", "если пара в новом месте", "", chipRow("default", m.default, MIN_OPTS))}
+      <details class="more"><summary>Дополнительно</summary>
+      ${opt("Между корпусами", "переезд в течение дня", "", chipRow("transfer", m.transfer, [10, 15, 20, 30, 40, 45, 60]))}
+      ${opt("Запас", "на лифты и задержки", "", chipRow("buffer", m.buffer, [0, 5, 10, 15, 20, 30]))}</details>`,
+    notify: () => `<h4>Уведомления</h4><div class="muted tiny">Пишу не на паре и не ночью.</div>
+      ${opt("Утро", "время выхода, погода, пары", sw("morning_on", m.morning_on), chipRow("lead", m.lead, [15, 30, 45, 60, 90, 120], (v) => `за ${v} мин`), !m.morning_on)}
+      ${opt("Перед концом пары", "куда идти дальше", sw("pre_end_toggle", m.pre_end_on), chipRow("pre_end", m.pre_end, [5, 10, 15, 20], (v) => `за ${v} мин`), !m.pre_end_on)}
+      ${opt("План на завтра", "пары и форма на физру", sw("evening_toggle", !!m.evening), chipRow("evening", m.evening, ["19:00", "20:00", "21:00", "22:00", "23:00"], (v) => v), !m.evening)}
+      ${opt("Изменения расписания", "отмены, переносы, аудитории", sw("changes_on", m.changes_on))}
+      ${opt("Итоги недели", "в воскресенье вечером", sw("digest_on", m.digest_on))}
+      <details class="more"${m.nolessons ? " open" : ""}><summary>Дополнительно</summary>
+      ${opt("«Пар нет» утром", "если всё отменили", sw("nolessons_toggle", !!m.nolessons), chipRow("nolessons", m.nolessons, ["07:00", "08:00", "09:00", "10:00"], (v) => v), !m.nolessons)}</details>`,
+    abs: () => `<h4>Посещаемость</h4>` + (S.abs === undefined ? `<div class="skel"></div>` : !S.abs
+      ? `<div class="muted tiny">Отметь себя в списке группы — увидишь, что ставит староста.</div><button class="btn block" data-act="claim-list" style="margin-top:14px">Найти себя</button>`
       : `<div class="set"><div class="l"><b>${esc(S.abs.name)}</b><span>по журналу старосты</span></div><button class="btn sm ghost" data-act="claim-list">Сменить</button></div>`
-        + (S.abs.items.length ? S.abs.items.map((x) => `<div class="set sub"><div class="l"><b>${esc(x.discipline)}</b><span>отмечено пар: ${x.total}</span></div><span class="pill ${x.absent >= 3 ? "red" : ""}">Н ${x.absent} из ${x.total}${x.excused ? ` · У ${x.excused}` : ""}</span></div>`).join("") : `<div class="note" style="padding:12px 14px">Пропусков нет 💪</div>`))}
-
-    ${card("Быстрый доступ", `<div class="set"><div class="l"><b>Живой закреп</b><span>в чате с ботом сверху: аудитория, что сейчас и что дальше</span></div>${sw("pin_on", m.pin_on)}</div>
-      ${tg?.addToHomeScreen ? `<div class="set"><div class="l"><b>Иконка на экране «Домой»</b><span>открывать «Пару» как приложение</span></div><button class="btn sm ghost" data-act="home-screen">Добавить</button></div>` : ""}`)}
-
-    ${card("Ильич", `<div class="set"><div class="l"><b>Без цензуры</b><span>крепкие словечки в репликах — только у тебя</span></div>${sw("raw", rawOn())}</div>`)}
-
-    ${card("Календарь", `<div class="set"><div class="l"><b>Расписание в календарь телефона</b><span>подписка, обновляется сама · вся группа, без учёта скрытых пар</span></div></div>
-      <div class="calbtns">${["google", "apple", "yandex"].map((k) => `<button class="btn sm ghost" data-act="cal" data-k="${k}">${{ google: "Google", apple: "Apple", yandex: "Яндекс" }[k]}</button>`).join("")}</div>`)}
-
-    ${card("Погода", `<div class="set"><div class="l"><b>${m.location ? "По твоей локации" : "Центр Москвы"}</b><span>для утреннего прогноза</span></div>
-      ${m.location ? `<button class="btn sm ghost" data-act="loc-reset">Сбросить</button>` : `<button class="btn sm ghost" data-act="loc">${icon("pin")}Моя локация</button>`}</div>`)}
-
-    ${card("Вещи на физру", !S.checklist ? `<div class="skel" style="margin:12px"></div>` : S.checklist.length ? S.checklist.map((d, i) => `<div class="disc"><div class="n">${esc(d.name)}</div>
+        + (S.abs.items.length ? S.abs.items.map((x) => `<div class="set"><div class="l"><b>${esc(x.discipline)}</b><span>отмечено пар: ${x.total}</span></div><span class="pill ${x.absent >= 3 ? "red" : ""}">Н ${x.absent} из ${x.total}${x.excused ? ` · У ${x.excused}` : ""}</span></div>`).join("") : `<div class="note">Пропусков нет 💪</div>`)),
+    pe: () => `<h4>Вещи на физру</h4><div class="muted tiny">Напомню утром и вечером накануне.</div>` + (!S.checklist ? `<div class="skel"></div>` : S.checklist.length ? S.checklist.map((d, i) => `<div class="disc"><div class="n">${esc(d.name)}</div>
       ${d.items.length ? `<div class="items">${d.items.map((it) => `<span class="item">${esc(it.text)}<button data-act="delitem" data-id="${it.id}" aria-label="Удалить">${icon("x")}</button></span>`).join("")}</div>` : `<div class="muted tiny" style="margin-top:4px">Пока напомню про форму и кроссовки</div>`}
       <form class="add" data-form="item" data-idx="${i}"><input class="input" name="t" placeholder="Полотенце, вода" autocomplete="off" aria-label="Что взять на ${esc(d.name)}"><button class="btn" aria-label="Добавить">${icon("plus")}</button></form></div>`).join("")
-      : `<div class="note" style="padding:14px 16px">В ближайшие две недели физры нет. По умолчанию напомню про форму и кроссовки.</div>`, "в утро и вечер")}
-
-    ${card("Скрытые пары", !S.hidden ? `<div class="skel" style="margin:12px"></div>` : S.hidden.length ? S.hidden.map((r) => `<div class="set"><div class="l"><b>${esc(r.discipline || "Все пары типа «" + r.kind + "»")}</b>
+      : `<div class="note">В ближайшие две недели физры нет. По умолчанию напомню про форму и кроссовки.</div>`),
+    hidden: () => `<h4>Скрытые пары</h4>` + (!S.hidden ? `<div class="skel"></div>` : S.hidden.length ? S.hidden.map((r) => `<div class="set"><div class="l"><b>${esc(r.discipline || "Все пары типа «" + r.kind + "»")}</b>
       <span>${[r.discipline && r.kind, r.contingent].filter(Boolean).map(esc).join(" · ") || "все занятия"}</span></div><button class="btn sm ghost" data-act="unhide" data-id="${r.id}">Вернуть</button></div>`).join("")
-      : `<div class="note" style="padding:14px 16px">Ничего не скрыто. Скрыть пару — нажми на неё в расписании.</div>`)}
-    <div class="foot">«Пара» — независимый студенческий проект. Не официальный сервис Финуниверситета.</div>`;
+      : `<div class="note">Ничего не скрыто. Чтобы скрыть пару, нажми на неё в расписании.</div>`),
+    more: () => `<h4>Календарь и погода</h4>
+      ${opt("Расписание в календарь телефона", "подписка, обновляется сама · вся группа, без учёта скрытых пар", "", `<div class="calbtns">${["google", "apple", "yandex"].map((k) => `<button class="btn sm ghost" data-act="cal" data-k="${k}">${{ google: "Google", apple: "Apple", yandex: "Яндекс" }[k]}</button>`).join("")}</div>`)}
+      ${opt(m.location ? "Погода по твоей локации" : "Погода по центру Москвы", "для утреннего прогноза", m.location ? `<button class="btn sm ghost" data-act="loc-reset">Сбросить</button>` : `<button class="btn sm ghost" data-act="loc">${icon("pin")}Моя локация</button>`)}`,
+    stats: () => statsHtml(),
+  }[sec];
+  if (!html) return;
+  openSheet(`<div class="mesec">${html()}</div>`, sec);
+  $("#sheet").scrollTop = keep;
+  if (sec === "stats" && S.stats === undefined) loadStats();
+}
+/* ---------- СТАТИСТИКА (только админ) ---------- */
+async function loadStats() {
+  S.stats = null;
+  try { S.stats = await api("/api/admin/stats"); } catch (e) { S.stats = undefined; fail(e); return closeSheet(); }
+  if (S.meSec === "stats") meSec("stats");
+}
+const TAB_NAMES = { "tab:day": "День", "tab:week": "Неделя", "tab:group": "Группа", "tab:find": "Поиск", "tab:me": "Я", "onb:start": "Начали онбординг", "onb:starosta": "Выбрали «я староста»", "onb:done": "Закончили онбординг" };
+function statsHtml() {
+  const s = S.stats;
+  if (!s) return `<h4>Статистика</h4><div class="skel" style="height:90px"></div><div class="skel" style="height:160px"></div>`;
+  const p = s.people, max = Math.max(1, ...s.series.map((d) => d.active)), top = s.funnel[0].n || 1;
+  const kpi = (n, l) => `<div class="kpi"><b>${n}</b><span>${l}</span></div>`;
+  const bars = s.series.map((d) => { const dt = pd(d.date);
+    return `<button class="bar" data-act="stbar" data-tip="${esc(`${dt.getDate()} ${MON_GEN[dt.getMonth()]}: активны ${d.active}, в приложении ${d.app}, новых ${d.new}`)}" aria-label="${dt.getDate()} ${MON_GEN[dt.getMonth()]}: ${d.active}">
+      <i style="height:${d.active ? Math.max(4, d.active / max * 100) : 0}%"></i><span>${dt.getDate()}</span></button>`; }).join("");
+  return `<h4>Статистика</h4><div class="muted tiny">Только счётчики, без содержимого сообщений. Видишь только ты.</div>
+    <div class="kpis">${kpi(p.users, "людей")}${kpi(p.dau, "сегодня")}${kpi(p.wau, "за 7 дней")}${kpi(p.mau, "за 30 дней")}
+      ${kpi(p.groups, "групп")}${kpi(p.starostas, "старост")}${kpi(p.chats, "бесед с ботом")}${kpi(p.blocked, "заблокировали")}</div>
+    <div class="st-h">Активные люди по дням</div>
+    <div class="bars" style="--max:${max}"><em>${max}</em>${bars}</div><div class="muted tiny" id="sttip">Нажми на столбик — покажу детали</div>
+    <div class="st-h">Воронка</div>
+    ${s.funnel.map((f) => `<div class="fun"><div class="fun-l"><span>${esc(f.label)}</span><b>${f.n}${f.of != null ? ` из ${f.of}` : ""}</b></div>
+      <div class="fun-t"><i style="width:${Math.max(f.n ? 2 : 0, f.n / (f.of || top) * 100)}%"></i></div></div>`).join("")}
+    <div class="st-h">Функции <small>7 дней · всего</small></div>
+    <div class="st-tbl">${s.features.map((f) => `<div class="${f.total ? "" : "z"}"><span>${esc(f.label)}</span><b>${f.week}</b><em>${f.total}</em></div>`).join("")}</div>
+    <div class="st-h">Приложение за 7 дней <small>людей</small></div>
+    <div class="st-tbl">${Object.keys(TAB_NAMES).map((k) => `<div class="${s.tabs[k] ? "" : "z"}"><span>${TAB_NAMES[k]}</span><b>${s.tabs[k] || 0}</b></div>`).join("")}</div>
+    <div class="st-h">Группы <small>активны за 7 дней · всего</small></div>
+    <div class="st-tbl">${s.groups.length ? s.groups.map((g) => `<div><span>${esc(g.label)}${g.starosta ? ` <i class="pill red">староста</i>` : ""}${g.chat ? ` <i class="pill">беседа</i>` : ""}</span><b>${g.active7}</b><em>${g.users}</em></div>`).join("") : `<div class="z"><span>Пока никого</span></div>`}</div>
+    <button class="btn ghost block" data-act="stats-reload" style="margin-top:16px">Обновить</button>`;
 }
 const pending = {}; let saveT;
 function queueSave(patch) {
@@ -1971,73 +2113,132 @@ function requestLocation() {
 }
 
 /* ---------- ОНБОРДИНГ ---------- */
-const O = { step: 1, group: null, travel: {}, buffer: 10, lead: 60, evening: "21:00" };
-const ONB_STK = { 1: 4, 2: 37, 3: 16, 4: 20 };
-function onbFrame(title, lead, body, cta) {
+// знакомство (3 карточки) → «кто ты» → группа → дорога → уведомления → подгруппы → [староста: беседа и приглашение]
+const O = { step: 1, role: "student", group: null, travel: {}, buffer: 10, lead: 60, evening: "21:00", pre_end: 15 };
+const INTRO = [
+  { s: 4, t: "Привет, я Ильич", q: "Буду вести твой день: когда выходить из дома, сколько до конца пары и куда идти дальше." },
+  { s: 10, t: "Вся группа тут", q: "Домашка из беседы по #дз, объявления старосты, контрольные — рядом с нужной парой." },
+  { s: 31, t: "Сессия без паники", q: "Считаю дни до зачётов, режу вопросы на порции и напоминаю учить. Не официально — по-студенчески." },
+];
+const onbSteps = () => (O.role === "starosta" ? 4 : 3);
+function onbFrame(title, lead, body, cta, stk = 4) {
   bootDone();
-  $("#onb").innerHTML = `<div class="onb-hero"><div class="onb-top"><span class="word">Пара</span><span class="onb-step">шаг ${O.step} из 4</span></div>
-    <div class="onb-prog"><i style="width:${O.step * 25}%"></i></div>
-    <div class="onb-say"><img src="${STK(ONB_STK[O.step] || 4)}" alt=""><div><h1>${title}</h1><p class="lead">${lead}</p></div></div></div>
+  $("#onb").innerHTML = `<div class="onb-hero"><div class="onb-top"><span class="word">Пара</span><span class="onb-step">шаг ${O.step} из ${onbSteps()}</span></div>
+    <div class="onb-prog"><i style="width:${O.step / onbSteps() * 100}%"></i></div>
+    <div class="onb-say"><img src="${STK(stk)}" alt=""><div><h1>${title}</h1><p class="lead">${lead}</p></div></div></div>
     <div class="body">${body}</div><div class="cta"><div>${cta || ""}</div></div>`;
+}
+function onbIntro(i = 0) {
+  bootDone();
+  if (i === 0) trackE("onb:start");
+  if (i >= INTRO.length) return onbRole();
+  const c = INTRO[i];
+  $("#onb").innerHTML = `<div class="intro"><div class="in-top"><span class="word">Пара</span><button class="in-skip" id="oskip">Пропустить</button></div>
+    <div class="in-card" id="incard"><img src="${STK(c.s)}" alt=""><h1>${c.t}</h1><p>${c.q}</p></div>
+    <div class="in-dots">${INTRO.map((_, k) => `<i class="${k === i ? "on" : ""}"></i>`).join("")}</div>
+    <div class="in-cta"><button class="btn block inv" id="onext">${i === INTRO.length - 1 ? "Начнём" : "Дальше"}</button></div></div>`;
+  anim($("#incard"), [{ opacity: 0, transform: "translateX(40px)" }, { opacity: 1, transform: "none" }], { duration: 420 });
+  $("#onext").onclick = () => { haptic(); onbIntro(i + 1); };
+  $("#oskip").onclick = () => { haptic(); onbRole(); };
+  let x0 = null; const card = $("#onb .intro");
+  card.ontouchstart = (e) => (x0 = e.touches[0].clientX);
+  card.ontouchend = (e) => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (dx < -50) { haptic(); onbIntro(i + 1); } else if (dx > 50 && i > 0) { haptic(); onbIntro(i - 1); } };
+}
+function onbRole() {
+  bootDone();
+  $("#onb").innerHTML = `<div class="intro"><div class="in-top"><span class="word">Пара</span></div>
+    <div class="in-card"><img src="${STK(20)}" alt=""><h1>Кто ты?</h1><p>От этого зависит, что я покажу первым.</p></div>
+    <div class="in-cta roles">
+      <button class="role" data-orole="student"><b>Я студент</b><span>расписание, напоминания, ДЗ группы</span></button>
+      <button class="role" data-orole="starosta"><b>Я староста</b><span>плюс объявления, журнал, сборы и опросы для группы</span></button></div></div>`;
+  $("#onb .roles").onclick = (e) => { const b = e.target.closest("[data-orole]"); if (!b) return; hsel(); O.role = b.dataset.orole; if (O.role === "starosta") trackE("onb:starosta"); onbGroup(); };
 }
 function onbGroup() {
   O.step = 1;
-  onbFrame("Привет, я Ильич", "Буду вести твой день: когда выходить, куда идти после пары, что брать на физру. Начнём с группы.",
-    `<input class="input" id="og" placeholder="Например, ПИ25-1" autocomplete="off"><div class="gres" id="ogres"></div>`,
-    `<button class="btn block" id="onext" disabled>Дальше</button>`);
+  onbFrame("Твоя группа", "Найду её в расписании ruz.fa.ru. Напиши как в зачётке.",
+    `<input class="input" id="og" placeholder="Например, ПИ25-1" autocomplete="off" value="${esc(O.group?.label || "")}"><div class="gres" id="ogres"></div>`,
+    `<button class="btn ghost" id="oback">Назад</button><button class="btn block" id="onext" ${O.group ? "" : "disabled"}>Дальше</button>`, O.role === "starosta" ? 20 : 4);
   const box = $("#ogres");
   $("#og").addEventListener("input", (e) => searchGroups(e.target.value.trim(), box, (id, label, b) => {
-    O.group = { id, label }; box.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); $("#onext").disabled = false; haptic();
+    O.group = { id, label }; box.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); $("#onext").disabled = false; hsel();
   }));
+  $("#oback").onclick = onbRole;
   $("#onext").onclick = async () => {
-    onbFrame("Секунду", `Тяну расписание ${esc(O.group.label)} с ruz.fa.ru`, `<div class="spin"></div>`);
+    onbFrame("Секунду", `Тяну расписание ${esc(O.group.label)} с ruz.fa.ru`, `<div class="spin"></div>`, "", 9);
     try { S.me = (await api("/api/group", { method: "POST", body: O.group })).me; onbTravel(); } catch (e) { fail(e); onbGroup(); }
   };
+}
+const ochips = (key, val, opts, fmt = (v) => `${v} мин`) => `<div class="chips ochips">${[...new Set([...opts, val])].sort((a, b) => (typeof a === "number" ? a - b : String(a).localeCompare(String(b))))
+  .map((v) => `<button class="${v === val ? "on" : ""}" data-oc="${key}" data-v="${v}">${v === "off" ? "Не надо" : fmt(v)}</button>`).join("")}</div>`;
+function onbChips(e) {  // общий обработчик чипов онбординга: значение в O, подсветка в ряду
+  const b = e.target.closest("[data-oc]"); if (!b) return false;
+  const k = b.dataset.oc, v = /^\d+$/.test(b.dataset.v) ? +b.dataset.v : b.dataset.v; hsel();
+  b.parentElement.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
+  if (k.startsWith("t:")) O.travel[k.slice(2)] = v; else O[k] = v;
+  return true;
 }
 function onbTravel() {
   O.step = 2;
   const bs = S.me.buildings.length ? S.me.buildings : [{ oid: "default", name: "До университета", minutes: 45 }];
   bs.forEach((b) => (O.travel[b.oid] = O.travel[b.oid] ?? b.minutes));
-  const row = (b) => `<div class="set"><div class="l"><b>${esc(b.name)}</b></div><div class="step"><button data-ot="${b.oid}" data-d="-5" aria-label="Меньше">${icon("minus")}</button><output id="ot-${b.oid}">${O.travel[b.oid]} мин</output><button data-ot="${b.oid}" data-d="5" aria-label="Больше">${icon("plus")}</button></div></div>`;
-  onbFrame("Дорога", "Сколько минут ты едешь от дома до каждого корпуса. По этому посчитаю, когда выходить.", bs.map(row).join(""),
-    `<button class="btn ghost" id="oback">Назад</button><button class="btn block" id="onext">Дальше</button>`);
-  $("#onb .body").onclick = (e) => { const b = e.target.closest("[data-ot]"); if (!b) return; const k = b.dataset.ot; O.travel[k] = Math.max(0, Math.min(240, O.travel[k] + +b.dataset.d)); $("#ot-" + k).textContent = O.travel[k] + " мин"; haptic(); };
+  onbFrame("Дорога", `Сколько едешь от дома до ${bs.length > 1 ? "каждого корпуса" : "вуза"}. По этому посчитаю, когда выходить.`,
+    bs.map((b) => `<div class="ocard"><b>${esc(bshort(b.name))}</b><span>${esc(b.name)}</span>${ochips("t:" + b.oid, O.travel[b.oid], MIN_OPTS)}</div>`).join("")
+    + `<div class="ocard"><b>Запас</b><span>на лифты и задержки</span>${ochips("buffer", O.buffer, [0, 5, 10, 15, 20])}</div>`,
+    `<button class="btn ghost" id="oback">Назад</button><button class="btn block" id="onext">Дальше</button>`, 37);
+  $("#onb .body").onclick = onbChips;
   $("#oback").onclick = onbGroup; $("#onext").onclick = onbTime;
 }
 function onbTime() {
   O.step = 3;
-  onbFrame("Когда писать", "Утром — когда выходить, вечером — план на завтра. Поменять можно потом в «Я».", `
-    <div class="set"><div class="l"><b>Запас к дороге</b><span>на случай задержек</span></div><div class="step"><button data-oo="buffer" data-d="-5" aria-label="Меньше">${icon("minus")}</button><output id="oo-buffer">${O.buffer} мин</output><button data-oo="buffer" data-d="5" aria-label="Больше">${icon("plus")}</button></div></div>
-    <div class="set"><div class="l"><b>Утреннее сообщение</b><span>за сколько до выхода</span></div><div class="step"><button data-oo="lead" data-d="-15" aria-label="Меньше">${icon("minus")}</button><output id="oo-lead">${O.lead} мин</output><button data-oo="lead" data-d="15" aria-label="Больше">${icon("plus")}</button></div></div>
-    <div class="set"><div class="l"><b>План на завтра</b><span>что взять, во сколько выходить</span></div><div class="step"><button data-otime data-d="-30" aria-label="Раньше">${icon("minus")}</button><output id="oev">${O.evening}</output><button data-otime data-d="30" aria-label="Позже">${icon("plus")}</button></div></div>`,
-    `<button class="btn ghost" id="oback">Назад</button><button class="btn block" id="onext">Дальше</button>`);
-  $("#onb .body").onclick = (e) => {
-    const tb = e.target.closest("[data-otime]");
-    if (tb) { O.evening = hhmm((tMin(O.evening) + +tb.dataset.d + 1440) % 1440); $("#oev").textContent = O.evening; haptic(); return; }
-    const b = e.target.closest("[data-oo]"); if (!b) return; const k = b.dataset.oo; O[k] = Math.max(k === "lead" ? 15 : 0, Math.min(180, O[k] + +b.dataset.d)); $("#oo-" + k).textContent = O[k] + " мин"; haptic(); };
+  onbFrame("Когда писать", "Пишу только по делу, не на паре и не ночью. Поменять можно в «Я».", `
+    <div class="ocard"><b>Утром — когда выходить</b><span>с погодой и парами</span>${ochips("lead", O.lead, [30, 45, 60, 90, "off"], (v) => `за ${v} мин`)}</div>
+    <div class="ocard"><b>Перед концом пары — куда дальше</b><span>аудитория и корпус следующей</span>${ochips("pre_end", O.pre_end, [10, 15, "off"], (v) => `за ${v} мин`)}</div>
+    <div class="ocard"><b>Вечером — план на завтра</b><span>пары, выход и форма на физру</span>${ochips("evening", O.evening, ["20:00", "21:00", "22:00", "off"], (v) => v)}</div>`,
+    `<button class="btn ghost" id="oback">Назад</button><button class="btn block" id="onext">Дальше</button>`, 16);
+  $("#onb .body").onclick = onbChips;
   $("#oback").onclick = onbTravel;
   $("#onext").onclick = async () => {
-    const body = { buffer: O.buffer, lead: O.lead, evening: O.evening };
+    const body = { buffer: O.buffer, evening: O.evening === "off" ? null : O.evening, morning_on: O.lead !== "off", pre_end: O.pre_end === "off" ? null : O.pre_end };
+    if (O.lead !== "off") body.lead = O.lead;
     for (const [k, v] of Object.entries(O.travel)) body[k === "default" ? "default" : "t" + k] = v;
     try { S.me = (await api("/api/settings", { method: "POST", body })).me; onbSub(); } catch (e) { fail(e); }
   };
 }
 async function onbSub() {
-  O.step = 4;
-  onbFrame("Подгруппы", "Смотрю, нет ли параллельных пар.", `<div class="spin"></div>`);
+  onbFrame("Подгруппы", "Смотрю, нет ли параллельных пар.", `<div class="spin"></div>`, "", 39);
   let slot = null;
   try { slot = (await api("/api/parallel")).slot; } catch (e) {}
-  if (!slot) return onbDone();
+  if (!slot) return O.role === "starosta" ? onbStarosta() : onbDone();
   const l = slot[0];
   onbFrame("Подгруппы", `${cap(relDay(l.date))}, ${l.begin}: у тебя ${slot.length} ${plural(slot.length, "параллельная пара", "параллельные пары", "параллельных пар")}. Какая твоя?`,
     slot.map((x) => `<button class="res" data-opick="${x.oid}"><span class="av">${esc(audNo(x.auditorium).slice(0, 2) || "—")}</span><span class="grow"><b>${esc(x.contingent || x.discipline)}</b><span class="muted tiny">ауд ${esc(audNo(x.auditorium))} · ${esc(x.lecturer || "")}</span></span>${icon("r")}</button>`).join(""),
-    `<button class="btn ghost block" id="oskip">Пропустить</button>`);
+    `<button class="btn ghost block" id="oskip">Пропустить</button>`, 39);
   $("#onb .body").onclick = async (e) => { const b = e.target.closest("[data-opick]"); if (!b) return; haptic(); try { await api("/api/pick", { method: "POST", body: { oid: +b.dataset.opick } }); } catch (er) { fail(er); } onbSub(); };
-  $("#oskip").onclick = onbDone;
+  $("#oskip").onclick = () => (O.role === "starosta" ? onbStarosta() : onbDone());
+}
+async function onbStarosta() {
+  O.step = 4;
+  onbFrame("Староста — это сила", "Секунду, отправляю заявку…", `<div class="spin"></div>`, "", 21);
+  let approved = false;
+  try { approved = !!(await api("/api/role/request", { method: "POST" })).starosta; S.feed = await api("/api/feed"); } catch (e) {}
+  const f = S.feed;
+  onbFrame("Староста — это сила", approved ? "Ты уже староста. Подготовим группу — две минуты." : "Заявку отправил админу, подтвердит скоро — пришлю в бот. А пока подготовим группу:",
+    `<button class="ocard ostep" data-oact="chat"><b>1. Добавь Ильича в беседу группы</b><span>буду ловить #дз и #кр, вечером писать пары на завтра</span></button>
+     <button class="ocard ostep" data-oact="invite"><b>2. Позови группу</b><span>ссылка: каждый подключится в один тап</span></button>
+     <div class="muted tiny" style="margin:10px 4px 0">Всё это потом есть во вкладке «Группа».</div>`,
+    `<button class="btn block" id="onext">Готово</button>`, 21);
+  $("#onb .body").onclick = (e) => {
+    const b = e.target.closest("[data-oact]"); if (!b || !f) return; haptic(); b.classList.add("done");
+    if (b.dataset.oact === "chat") { try { tg?.openTelegramLink ? tg.openTelegramLink(f.add_link) : open(f.add_link); } catch (er) { open(f.add_link); } }
+    else shareText(`${S.me.group?.label}, подключайтесь к «Паре»: утром бот скажет, во сколько выходить, за 15 минут до конца пары — куда идти, а ДЗ из беседы соберёт в одном месте. Один тап: ${f.invite}`);
+  };
+  $("#onext").onclick = onbDone;
 }
 async function onbDone() {
   try { S.me = (await api("/api/onboarding/finish", { method: "POST" })).me; } catch (e) { return fail(e); }
   try { tg?.requestWriteAccess?.(); } catch (e) {}
+  trackE("onb:done");
   okHaptic(); $("#onb").classList.remove("on"); start();
 }
 
@@ -2052,11 +2253,13 @@ function goBack() {
   if (S.tab === "find" && S.find.detail) { S.find.detail = null; renderFind(); updateBack(); }
 }
 const TAB_ORDER = ["day", "week", "group", "find", "me"];
+const tracked = new Set();
+function trackE(e) { if (tracked.has(e) || DEV_USER) return; tracked.add(e); api("/api/track", { method: "POST", body: { e } }).catch(() => {}); }
 function setTab(t) {
   const dir = Math.sign(TAB_ORDER.indexOf(t) - TAB_ORDER.indexOf(S.tab));
   document.documentElement.style.setProperty("--dir", String(dir || 0));
   if (t !== "day") $("#minibar")?.classList.remove("on");
-  S.tab = t;
+  S.tab = t; trackE("tab:" + t);
   document.querySelectorAll(".tab").forEach((b) => { b.classList.toggle("on", b.dataset.tab === t); b.setAttribute("aria-current", b.dataset.tab === t ? "page" : "false"); });
   document.querySelectorAll(".view").forEach((s) => s.classList.toggle("on", s.id === "v-" + t));
   window.scrollTo(0, 0);
@@ -2238,6 +2441,9 @@ document.addEventListener("click", async (e) => {
   if (act === "fquick") { haptic(); return quickFind(a.dataset.q, a.dataset.label); }
   if (act === "fback") return goBack();
   if (act === "chgroup") return groupSheet();
+  if (act === "mesec") { haptic(); return meSec(a.dataset.sec); }
+  if (act === "stbar") { hsel(); document.querySelectorAll(".bar.on").forEach((x) => x.classList.remove("on")); a.classList.add("on"); $("#sttip").textContent = a.dataset.tip; return; }
+  if (act === "stats-reload") { haptic(); S.stats = undefined; return meSec("stats"); }
   if (act === "unhide") { try { await api(`/api/hidden/${a.dataset.id}`, { method: "DELETE" }); toast("Вернул"); invalidate(); S.hidden = (await api("/api/hidden")).rules; await ensureChecklist(); renderMe(); } catch (er) { fail(er); } return; }
   if (act === "loc") return requestLocation();
   if (act === "loc-reset") { S.me.location = false; queueSave({ location: null }); renderMe(); return; }
@@ -2246,6 +2452,13 @@ document.addEventListener("click", async (e) => {
   const fp = t.closest("[data-fp]"); if (fp) { haptic(); S.free.begin = fp.dataset.fp; return loadFree({ begin: fp.dataset.fp }); }
   if (t.closest("[data-goto-free]")) { haptic(); S.find.type = "free"; S.find.detail = null; return setTab("find"); }
   const ad = t.closest("[data-auddate]"); if (ad) { S.find.audDate = ad.dataset.auddate; return openFind(S.find.detail.id, S.find.detail.label); }
+  const ch = t.closest("[data-chip]");
+  if (ch) {
+    const k = ch.dataset.chip, v = /^\d+$/.test(ch.dataset.v) ? +ch.dataset.v : ch.dataset.v; hsel();
+    ch.parentElement.querySelectorAll("button").forEach((b) => b.classList.toggle("on", b === ch));
+    if (k.startsWith("t")) { const b = S.me.buildings.find((x) => "t" + x.oid === k); if (b) { b.minutes = v; b.set = true; } } else S.me[k] = v;
+    queueSave({ [k]: v }); renderMe(); return;
+  }
   const st = t.closest("[data-step]");
   if (st) {
     const k = st.dataset.step, out = $("#o-" + k), cur = parseInt(out.textContent, 10);
@@ -2329,7 +2542,7 @@ function start() {
   if (!tg?.initData && !DEV_USER) return fatal("Открой через меню", "Нажми кнопку «Приложение» слева от поля ввода в чате с ботом — так Telegram передаёт, кто ты.");
   try { const b = await api("/api/bootstrap"); S.me = b.me; S.today = b.today; clockOffset = Date.parse(b.now) - Date.now(); }
   catch (e) { return fatal("Нет связи", e.status === 401 ? "Сессия устарела. Закрой приложение и открой его заново." : "Не удалось подключиться. Проверь интернет.", e.status !== 401); }
-  if (!S.me.onboarded || !S.me.group) { $("#onb").classList.add("on"); return onbGroup(); }
+  if (!S.me.onboarded || !S.me.group) { $("#onb").classList.add("on"); return onbIntro(); }
   start();
 })();
 </script>
