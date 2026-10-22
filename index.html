@@ -36,7 +36,8 @@ const viaApi = () => withTimeout(fetch(`https://api.github.com/repos/${REPO}/con
 const viaPages = () => withTimeout(fetch(`url.json?t=${Date.now()}`, { cache: "no-store" }).then((r) => r.ok ? r.json() : Promise.reject(r.status)), 6000);
 async function go() {
   try {
-    const { url } = await Promise.any([viaApi(), viaPages()]);  // кто первый ответит
+    // Pages обновляется с задержкой и кешируется — ему верим, только если API недоступен
+    const { url } = await viaApi().catch(() => viaPages());
     location.replace(url.replace(/\/$/, "") + "/" + location.search + location.hash);
   } catch (e) {
     document.getElementById("q").textContent = "Сервер «Пары» сейчас недоступен — Мак выключен или без сети.";
