@@ -1013,7 +1013,7 @@ async function followTunnel() { /* старые ссылки на туннель
   location.replace(`https://${PAGES_REPO.split("/")[0]}.github.io/${PAGES_REPO.split("/")[1]}/` + location.search + location.hash);
   return true;
 }
-async function api(path, { method = "GET", body } = {}) {
+async function apiNet(path, { method = "GET", body } = {}) {
   const headers = { "X-Init-Data": tg?.initData || "" };
   if (DEV_USER) headers["X-Dev-User"] = DEV_USER;
   if (body !== undefined) headers["Content-Type"] = "application/json";
@@ -1029,6 +1029,39 @@ async function api(path, { method = "GET", body } = {}) {
   const j = await r.json().catch(() => ({}));
   if (!r.ok) { const e = new Error(j.error || `HTTP ${r.status}`); e.status = r.status; throw e; }
   return j;
+}
+/* сохранённые ответы: открываемся сразу из памяти телефона, свежее подтягиваем фоном; если Mac или туннель лежат — живём на сохранённом */
+const SWR = /^\/api\/(bootstrap|days|home|feed|checklist|study|exams|teachers|news|campus|absences|hidden)(\?|$)/;
+const ckey = (path) => `c:${tg?.initDataUnsafe?.user?.id || DEV_USER || 0}:${path}`;
+function cget(path) { try { const v = JSON.parse(localStorage.getItem(ckey(path))); return v && Date.now() - v.t < 7 * 864e5 ? v.d : null; } catch (e) { return null; } }
+function cclear() { try { Object.keys(localStorage).filter((k) => k.startsWith("c:")).forEach((k) => localStorage.removeItem(k)); } catch (e) {} }
+function cput(path, d) { const put = () => localStorage.setItem(ckey(path), JSON.stringify({ t: Date.now(), d })); try { put(); } catch (e) { cclear(); try { put(); } catch (e2) {} } }
+const sameData = (a, b) => { const f = (x) => JSON.stringify(x, (k, v) => (k === "now" ? undefined : v)); return f(a) === f(b); };
+const mskToday = () => new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10);
+let refreshT = 0, offlineT = 0;
+function softRefresh() {  // пришло новее, чем показали: тихо перерисовать текущую вкладку
+  if (Date.now() - refreshT < 4000) return; refreshT = Date.now();
+  setTimeout(() => {
+    if ($("#sheet").classList.contains("on") || document.activeElement?.tagName === "INPUT") return;
+    invalidate();
+    if (S.tab === "day") openDay(S.date); else if (S.tab === "week") openWeek(S.weekStart); else if (S.tab === "group") openGroup(); else if (S.tab === "me") openMe();
+  }, 200);
+}
+async function api(path, opts = {}) {
+  if (opts.method && opts.method !== "GET") { const r = await apiNet(path, opts); cclear(); return r; }  // после правки старые ответы не показываем
+  if ((DEV_USER && !qs.get("swr")) || !SWR.test(path)) return apiNet(path, opts);
+  const hit = cget(path); let used = false;
+  const net = apiNet(path, opts).then((r) => {
+    cput(path, r);
+    if (used && !sameData(hit, r)) { if (path === "/api/bootstrap") { S.me = r.me; S.today = r.today; clockOffset = Date.parse(r.now) - Date.now(); } softRefresh(); }
+    return r;
+  }, (e) => {
+    if (!hit || e.status === 401) throw e;
+    used = true; if (Date.now() - offlineT > 30000) { offlineT = Date.now(); toast("Нет связи с ботом — показываю сохранённое"); }
+    return { ...hit, _stale: true };
+  });
+  if (!hit) return net;
+  return Promise.race([net, new Promise((res) => setTimeout(() => { used = true; res({ ...hit, _stale: true }); }, 250))]);
 }
 let toastT;
 function toast(text) { const t = $("#toast"); t.textContent = text; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2000); }
@@ -1196,7 +1229,7 @@ async function openDay(date) {
   if (!S.days[date]) $("#v-day").innerHTML = dayHeadHtml() + `<div class="skel" style="height:120px"></div><div class="skel"></div><div class="skel"></div>`;
   try {
     const jobs = [ensureWeek(S.weekStart), ensureChecklist()];
-    if (date === S.today && !S.home) jobs.push(api("/api/home").then((h) => { S.home = h; clockOffset = Date.parse(h.now) - Date.now(); }));
+    if (date === S.today && !S.home) jobs.push(api("/api/home").then((h) => { S.home = h; if (!h._stale) clockOffset = Date.parse(h.now) - Date.now(); }));
     if (date === S.today && !S.feed) jobs.push(api("/api/feed").then((f) => { S.feed = f; }).catch(() => {}));
     if (date === S.today && !S.study) jobs.push(api("/api/study").then((r) => { S.study = r.sets; }).catch(() => {}));
     await Promise.all(jobs);
@@ -2782,7 +2815,7 @@ function start() {
   try { tg?.ready(); tg?.expand(); tg?.disableVerticalSwipes?.(); tg?.onEvent?.("themeChanged", applyTheme); tg?.BackButton?.onClick(goBack); } catch (e) {}
   const fatal = (title, text, retry = false) => { bootDone(); $("main").innerHTML = `<div class="empty"><img class="stk" src="static/stickers/11.webp" alt=""><div class="big">${title}</div><p>${text}</p>${retry ? `<button class="btn" onclick="location.reload()" style="margin-top:18px">ещё раз</button>` : ""}</div>`; $(".tabbar").classList.add("hide"); };
   if (!tg?.initData && !DEV_USER) return fatal("Открой через меню", "Нажми кнопку «Приложение» слева от поля ввода в чате с ботом — так Telegram передаёт, кто ты.");
-  try { const b = await api("/api/bootstrap"); S.me = b.me; S.today = b.today; clockOffset = Date.parse(b.now) - Date.now(); }
+  try { const b = await api("/api/bootstrap"); S.me = b.me; S.today = b._stale ? mskToday() : b.today; if (!b._stale) clockOffset = Date.parse(b.now) - Date.now(); }
   catch (e) { return fatal("Нет связи", e.status === 401 ? "Сессия устарела. Закрой приложение и открой его заново." : "Не удалось подключиться. Проверь интернет.", e.status !== 401); }
   if (!S.me.onboarded || !S.me.group) { $("#onb").classList.add("on"); return onbIntro(); }
   start();
