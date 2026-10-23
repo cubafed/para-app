@@ -1014,6 +1014,8 @@ async function ensureWeek(ws) {
 }
 async function ensureChecklist() { if (!S.checklist) S.checklist = (await api("/api/checklist")).disciplines; }
 function invalidate() { S.days = {}; S.home = null; S.checklist = null; S.teachers = undefined; }
+/* расписание поменялось (выбрали подгруппу, скрыли пару, староста отменил…): сбросить и перечитать то, что сейчас на экране */
+function refreshSchedule() { invalidate(); if (S.tab === "week") openWeek(S.weekStart); else if (S.tab === "day") openDay(S.date); }
 
 /* ---------- ДЕНЬ ---------- */
 function lessonState(l) {
@@ -2543,10 +2545,10 @@ document.addEventListener("click", async (e) => {
   if (act === "ov-send") {
     const v = $("#ovtext").value.trim(), o = S.ov; if (o.status === "room" && !v) return toast("Напиши аудиторию");
     try { await api("/api/override", { method: "POST", body: { ...o, auditorium: o.status === "room" ? v : null, note: o.status === "cancelled" ? v : "" } });
-      okHaptic(); toast("Разослал группе"); closeSheet(); invalidate(); openDay(S.date); } catch (er) { fail(er); }
+      okHaptic(); toast("Разослал группе"); closeSheet(); refreshSchedule(); } catch (er) { fail(er); }
     return;
   }
-  if (act === "ov-del") { try { await api(`/api/override/${a.dataset.id}`, { method: "DELETE" }); toast("Вернул пару"); invalidate(); openDay(S.date); } catch (er) { fail(er); } return; }
+  if (act === "ov-del") { try { await api(`/api/override/${a.dataset.id}`, { method: "DELETE" }); toast("Вернул пару"); refreshSchedule(); } catch (er) { fail(er); } return; }
   if (act === "study") { haptic(); return studySheet(+a.dataset.id); }
   if (act === "study-up") { haptic(); return uploadSheet(a.dataset.disc, a.dataset.date); }
   if (act === "study-send") { a.disabled = true; await uploadStudy(); a.disabled = false; return; }
@@ -2566,13 +2568,13 @@ document.addEventListener("click", async (e) => {
   if (act === "rem-new") { haptic(); S.rem = null; return remSheet(a.dataset.date); }
   if (act === "rem-save") {
     const r = S.rem; r.text = $("#rtext").value.trim(); if (!r.text) return toast("Напиши, что сделать");
-    try { await api("/api/reminders", { method: "POST", body: { date: r.date, text: r.text, mode: r.mode, time: r.time, begin: r.begin } }); okHaptic(); toast("Напомню ✍️"); closeSheet(); S.rem = null; invalidate(); openDay(S.date); }
+    try { await api("/api/reminders", { method: "POST", body: { date: r.date, text: r.text, mode: r.mode, time: r.time, begin: r.begin } }); okHaptic(); toast("Напомню ✍️"); closeSheet(); S.rem = null; refreshSchedule(); }
     catch (er) { toast(er.status === 400 ? "Это время уже прошло или пары нет" : "Не получилось"); }
     return;
   }
   if (act === "rem") { haptic(); const d = S.days[a.dataset.date], r = d.reminders.find((x) => x.id === +a.dataset.id);
     return openSheet(`<h4>${esc(r.text)}</h4><div class="muted tiny">${cap(relDay(d.date))}, ${r.at} · ${esc(r.anchor)}</div><button class="btn ghost block" data-act="rem-del" data-id="${r.id}" style="margin-top:16px">Удалить дело</button>`); }
-  if (act === "rem-del") { try { await api(`/api/reminders/${a.dataset.id}`, { method: "DELETE" }); toast("Удалил"); closeSheet(); invalidate(); openDay(S.date); } catch (er) { fail(er); } return; }
+  if (act === "rem-del") { try { await api(`/api/reminders/${a.dataset.id}`, { method: "DELETE" }); toast("Удалил"); closeSheet(); refreshSchedule(); } catch (er) { fail(er); } return; }
   if (act === "ann-new") { haptic(); return annSheet(); }
   if (act === "ann-send") {
     const text = $("#atext").value.trim(); if (text.length < 3) return toast("Напиши текст объявления");
@@ -2613,12 +2615,12 @@ document.addEventListener("click", async (e) => {
   if (act === "par") { haptic(); return parSheet(a.dataset.date, a.dataset.i); }
   if (act === "hide") {
     closeSheet();
-    try { await api("/api/hide", { method: "POST", body: { oid: +a.dataset.oid, scope: a.dataset.scope } }); okHaptic(); toast("Скрыто. Вернуть можно во вкладке «Я»"); invalidate(); openDay(S.date); } catch (er) { fail(er); }
+    try { await api("/api/hide", { method: "POST", body: { oid: +a.dataset.oid, scope: a.dataset.scope } }); okHaptic(); toast("Скрыто. Вернуть можно во вкладке «Я»"); refreshSchedule(); } catch (er) { fail(er); }
     return;
   }
   if (act === "pick") {
     closeSheet();
-    try { await api("/api/pick", { method: "POST", body: { oid: +a.dataset.oid } }); okHaptic(); toast("Запомнил подгруппу"); invalidate(); openDay(S.date); } catch (er) { fail(er); }
+    try { await api("/api/pick", { method: "POST", body: { oid: +a.dataset.oid } }); okHaptic(); toast("Запомнил подгруппу"); refreshSchedule(); } catch (er) { fail(er); }
     return;
   }
   if (act === "teacher") { closeSheet(); S.find = { ...S.find, type: "person", q: a.dataset.name, detail: null }; setTab("find"); runSearchThenOpen(a.dataset.name); return; }
