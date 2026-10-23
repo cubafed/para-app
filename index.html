@@ -603,6 +603,37 @@ body.hero-on .mast { border-radius: 0; }
 .wchip.ctl.sel { box-shadow: inset 0 0 0 3px var(--blk), 0 10px 20px -10px rgba(218,34,39,.7); }
 .wchip.sel.today::before, .wchip.ctl.today::before { background: #fff; }
 .wchip.ctl i { font-weight: 800; }
+.wday { display: grid; grid-template-columns: 54px 1fr; gap: 12px; width: 100%; text-align: left; background: var(--card); border-radius: 24px; box-shadow: var(--shadow); padding: 12px 14px 8px 12px; margin-top: 12px; scroll-margin-top: 120px; }
+.wd-date { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; align-self: start; height: 74px; border-radius: 18px; background: var(--paper-2); }
+.wd-date span { font: 800 11px var(--text); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+.wd-date b { font: 400 26px/1 var(--num); }
+.wd-date i { font: 700 10.5px var(--text); font-style: normal; color: var(--ink-3); }
+.wday.today .wd-date { background: var(--red); box-shadow: 0 10px 18px -10px rgba(218,34,39,.8); }
+.wday.today .wd-date span, .wday.today .wd-date i { color: #FFE1D6; }
+.wday.today .wd-date b { color: #fff; }
+.wd-body { min-width: 0; }
+.wday.today { box-shadow: inset 0 0 0 2px var(--red), var(--shadow); }
+.wday.past { opacity: .6; }
+.wday.off { padding-bottom: 12px; background: transparent; box-shadow: inset 0 0 0 2px var(--hair); align-items: center; }
+.wday.off .wd-date { height: 56px; background: transparent; box-shadow: inset 0 0 0 2px var(--hair); align-self: center; }
+.wday.off .wd-date b { font-size: 22px; color: var(--ink-3); }
+.wd-h { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin-bottom: 2px; }
+.wd-h b { font: 800 17px var(--display); }
+.wd-h span { font: 600 13px var(--text); color: var(--ink-2); }
+.wd-h em { font: 700 12px var(--text); font-style: normal; color: var(--ink-3); margin-left: auto; }
+.wday.today .wd-h span { color: var(--red-text); }
+.wl { display: grid; grid-template-columns: 42px 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--hair); }
+.wl .tm { font: 700 14px var(--display); }
+.wl .nm { font: 600 14px/1.25 var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wl .nm .pill { font-style: normal; }
+.wl .rm { font: 400 16px var(--num); }
+.wl.past { opacity: .45; }
+.wl.now .tm, .wl.now .rm { color: var(--red); }
+.wd-f { font: 600 12.5px var(--text); color: var(--ink-2); padding: 8px 0 4px; border-top: 1px solid var(--hair); }
+.wd-f b { color: var(--ink); }
+.wd-free { display: flex; align-items: center; gap: 10px; font: 700 14px var(--text); color: var(--ink-2); }
+.wd-free img { width: 44px; height: 44px; object-fit: contain; }
+.wkseg { margin: 4px 0 10px; }
 .wlegend { display: flex; align-items: center; gap: 8px; margin: 2px 4px 6px; font: 600 12px var(--text); color: var(--ink-2); }
 .wlegend i { width: 12px; height: 12px; border-radius: 4px; background: var(--red); flex: none; }
 .wk-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 8px 2px 12px; }
@@ -1004,7 +1035,7 @@ function toast(text) { const t = $("#toast"); t.textContent = text; t.classList.
 function fail(e) { console.error(e); toast(e.status === 502 ? "Сайт расписания не отвечает. Попробуй через минуту" : "Не получилось. Проверь интернет и попробуй ещё раз"); }
 
 /* ---------- состояние ---------- */
-const S = { animated: {}, scrolled: false, me: null, today: null, tab: "day", date: null, weekStart: null, days: {}, home: null, checklist: null,
+const S = { wkMode: (() => { if (new URLSearchParams(location.search).get("wm") === "week") return "week"; try { return localStorage.getItem("wkmode") === "week" ? "week" : "day"; } catch (e) { return "day"; } })(), animated: {}, scrolled: false, me: null, today: null, tab: "day", date: null, weekStart: null, days: {}, home: null, checklist: null,
   find: { type: new URLSearchParams(location.search).get("ft") || "person", q: "", items: [], detail: null, audDate: null }, hidden: null };
 
 async function ensureWeek(ws) {
@@ -1875,6 +1906,18 @@ function wkPanel(d) {
     ${n ? `<button class="btn sm ghost" data-open="${d.date}">В «Дне»</button>` : ""}</div>`;
   return head + (n ? leaveHtml(d) + `<div style="height:14px"></div>` + pathHtml(d) : emptyDayHtml(d)) + remsHtml(d);
 }
+function weekCards(days) {
+  return days.map((d) => {
+    const dt = pd(d.date), n = d.slots.length, cls = d.date === S.today ? "today" : d.date < S.today ? "past" : "";
+    const dateBox = `<div class="wd-date"><span>${WD[dt.getDay()]}</span><b>${dt.getDate()}</b><i>${MON_GEN[dt.getMonth()].slice(0, 3)}</i></div>`;
+    if (!n) return `<button class="wday off" id="wd-${d.date}" data-wopen="${d.date}">${dateBox}<div class="wd-body"><div class="wd-free"><img src="${STK(32)}" alt="">Пар нет</div></div></button>`;
+    return `<button class="wday ${cls}" id="wd-${d.date}" data-wopen="${d.date}">${dateBox}<div class="wd-body"><div class="wd-h"><b>${d.date === S.today ? "Сегодня" : cap(WD_FULL[dt.getDay()])}</b>
+      <em>${n} ${plural(n, "пара", "пары", "пар")} · ${d.slots[0].lessons[0].begin}–${d.slots[n - 1].lessons[0].end}</em></div>
+      ${d.slots.map((s) => { const l = s.lessons[0], par = s.lessons.length > 1, hot = s.lessons.some(isCtl) || s.lessons.some((x) => HOT.has(x.tag));
+        return `<div class="wl ${d.date === S.today && lessonState(l) !== "next" ? lessonState(l) : ""}"><span class="tm">${l.begin}</span><span class="nm">${esc(l.discipline)}${hot ? `<i class="pill red">${esc(l.kind)}</i>` : ""}${(l.assess || []).map((a) => `<i class="pill as">📝 ${esc(a.label)}</i>`).join("")}${par ? `<i class="pill">${s.lessons.length} вар.</i>` : ""}</span><span class="rm">${par ? "?" : esc(audNo(l.auditorium) || "—")}</span></div>`; }).join("")}
+      ${d.leave ? `<div class="wd-f">выход из дома в <b>${d.leave.at}</b> · ${esc(bshort(d.leave.building))}</div>` : ""}</div></button>`;
+  }).join("");
+}
 function renderWeek(dir = 0) {
   bootDone();
   document.body.classList.remove("hero-on");
@@ -1882,13 +1925,16 @@ function renderWeek(dir = 0) {
   for (let i = 0; i < 7; i++) { const d = S.days[addDays(ws, i)]; if (d && (i < 6 || d.slots.length)) days.push(d); }
   if (!days.length) { $("#v-week").innerHTML = weekHeadHtml() + `<div class="skel" style="height:240px"></div>`; return; }
   wkPick(days, dir);
-  const chips = days.map((d) => { const dt = pd(d.date), n = d.slots.length, ctl = dayCtl(d), sel = d.date === S.wkDay;
+  const all = S.wkMode === "week";
+  const chips = days.map((d) => { const dt = pd(d.date), n = d.slots.length, ctl = dayCtl(d), sel = !all && d.date === S.wkDay;
     return `<button class="wchip ${sel ? "sel" : ""} ${d.date === S.today ? "today" : ""} ${n ? "" : "off"} ${ctl ? "ctl" : ""}" data-wsel="${d.date}" aria-pressed="${sel}"
       aria-label="${cap(WD_FULL[dt.getDay()])}, ${human(d.date)}${ctl ? ", есть контрольная" : ""}"><span>${WD[dt.getDay()]}</span><b>${dt.getDate()}</b><i>${ctl ? "КР" : n || "—"}</i></button>`; }).join("");
-  $("#v-week").innerHTML = weekHeadHtml() + weekSay(days) + `<div class="wstrip">${chips}</div>`
+  const seg = `<div class="seg wkseg"><button class="${all ? "" : "on"}" data-wmode="day" aria-pressed="${!all}">День</button><button class="${all ? "on" : ""}" data-wmode="week" aria-pressed="${all}">Вся неделя</button></div>`;
+  $("#v-week").innerHTML = weekHeadHtml() + seg + (all ? "" : weekSay(days)) + `<div class="wstrip">${chips}</div>`
     + (days.some(dayCtl) ? `<div class="wlegend"><i></i>красным — контрольная или самостоятельная</div>` : "")
-    + `<div id="wkday">${wkPanel(S.days[S.wkDay])}</div>`;
-  if (dir) anim($("#wkday"), [{ opacity: 0, transform: `translateX(${dir * 32}px)` }, { opacity: 1, transform: "none" }], { duration: 320 });
+    + (all ? `<div id="wkall">${weekCards(days)}</div>` : `<div id="wkday">${wkPanel(S.days[S.wkDay])}</div>`);
+  if (!all && dir) anim($("#wkday"), [{ opacity: 0, transform: `translateX(${dir * 32}px)` }, { opacity: 1, transform: "none" }], { duration: 320 });
+  if (all && S.wkScrollTo) { const el = $(`#wd-${S.wkScrollTo}`); S.wkScrollTo = null; if (el) scrollTo(0, scrollY + el.getBoundingClientRect().top - 96); }
 }
 /* соседний день: свайп; через воскресенье без пар и через границу недели */
 function wkStep(k) {
@@ -2456,7 +2502,7 @@ function setTab(t) {
   window.scrollTo(0, 0);
   if (t !== "day") document.body.classList.remove("hero-on");
   if (t === "day") openDay(S.date || S.today);
-  if (t === "week") openWeek(S.weekStart || monday(S.date || S.today));
+  if (t === "week") { if (S.wkMode === "week") S.wkScrollTo = S.wkDay || S.today; openWeek(S.weekStart || monday(S.date || S.today)); }
   if (t === "find") {
     renderFind();
     ensureWeek(monday(S.today)).then(() => { if (S.tab === "find" && !S.find.q && !S.find.detail) renderFind(); }).catch(() => {});
@@ -2481,7 +2527,10 @@ document.addEventListener("click", async (e) => {
   const cc = t.closest("[data-cc]"); if (cc) { hsel(); S.campusCat = cc.dataset.cc; return renderFind(); }
   const jd = t.closest("[data-jd]"); if (jd) { haptic(); return journalSheet(jd.dataset.jd); }
   const jg = t.closest("[data-jg]"); if (jg) { haptic(); const [i, k] = jg.dataset.jg.split(":"); const e = S.jr.edit[+i]; e[k] = !e[k] ? "absent" : e[k] === "absent" ? "excused" : ""; if (!e[k]) delete e[k]; return renderJournal(); }
-  const wsel = t.closest("[data-wsel]"); if (wsel) { haptic(); const k = Math.sign(pd(wsel.dataset.wsel) - pd(S.wkDay)); S.wkDay = wsel.dataset.wsel; return renderWeek(k); }
+  const wm = t.closest("[data-wmode]"); if (wm) { haptic(); S.wkMode = wm.dataset.wmode; try { localStorage.setItem("wkmode", S.wkMode); } catch (er) {} if (S.wkMode === "week") S.wkScrollTo = S.wkDay; return renderWeek(); }
+  const wo = t.closest("[data-wopen]"); if (wo) { haptic(); S.wkMode = "day"; try { localStorage.setItem("wkmode", "day"); } catch (er) {} S.wkDay = wo.dataset.wopen; scrollTo(0, 0); return renderWeek(1); }
+  const wsel = t.closest("[data-wsel]"); if (wsel && S.wkMode === "week") { haptic(); const el = $(`#wd-${wsel.dataset.wsel}`); if (el) scrollTo({ top: scrollY + el.getBoundingClientRect().top - 96, behavior: "smooth" }); return; }
+  if (wsel) { haptic(); const k = Math.sign(pd(wsel.dataset.wsel) - pd(S.wkDay)); S.wkDay = wsel.dataset.wsel; return renderWeek(k); }
   const op = t.closest("[data-open]"); if (op) { haptic(); closeSheet(); S.date = op.dataset.open; return setTab("day"); }
   if (t.closest("#scrim")) return closeSheet();
   if (t.closest("#ily")) return dragged ? undefined : ilyTap();
