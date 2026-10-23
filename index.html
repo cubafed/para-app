@@ -299,13 +299,13 @@ symbol .f { fill: var(--icf, #FCCAA7); }
 :root[data-theme="dark"] svg.i { --icf: rgba(255,255,255,.12); }
 main { padding-bottom: calc(var(--tabbar) + 40px + env(safe-area-inset-bottom)); }
 
-.mast { min-height: 60px; height: auto; border-radius: 0 0 28px 28px; }
+.mast { min-height: 60px; height: auto; border-radius: 0 0 28px 28px; transition: background .8s; }
 .mast .rule { display: none; }
 .word { font: 800 26px/1 var(--display); letter-spacing: -.03em; display: inline-flex; align-items: center; gap: 6px; }
 .word::after { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--skin); transform: translateY(-8px); }
 .mast .grp { background: rgba(255,255,255,.16); color: #fff; border-radius: 22px; height: 40px; padding: 0 5px 0 14px; display: flex; align-items: center; gap: 8px; font: 700 13px var(--text); letter-spacing: 0; }
 .mast .grp img { width: 30px; height: 30px; border-radius: 50%; background: var(--skin); object-fit: cover; object-position: 50% 10%; }
-body.hero-on .mast { border-radius: 0; }
+body.hero-on .mast { border-radius: 0; background: var(--ha, var(--red)); }
 
 .tabbar { left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); border: 0; border-radius: 30px; background: var(--bar); padding: 6px;
   -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4); box-shadow: 0 12px 34px -10px rgba(44,32,24,.4), 0 0 0 1px var(--hair); max-width: 536px; margin: 0 auto; }
@@ -375,7 +375,7 @@ body.hero-on .mast { border-radius: 0; }
 
 /* --- красная шапка дня --- */
 .hero { position: relative; margin: 0 -16px; padding: 2px 16px 26px; color: #fff; border-radius: 0 0 36px 36px; z-index: 2;
-  background: linear-gradient(180deg, var(--red) 0%, var(--red) 45%, var(--red-2) 100%); }
+  background: linear-gradient(180deg, var(--ha, var(--red)) 0%, var(--ha, var(--red)) 45%, var(--hb, var(--red-2)) 100%); }
 .hero.shake { animation: shake .5s cubic-bezier(.36,.07,.19,.97) both; }
 @keyframes shake { 10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); } 30%, 50%, 70% { transform: translateX(-7px); } 40%, 60% { transform: translateX(7px); } }
 .h-date { font: 600 14px var(--text); color: #FFD9CC; }
@@ -392,9 +392,14 @@ body.hero-on .mast { border-radius: 0; }
 .h-unit { font: 800 22px var(--display); margin-bottom: 18px; color: #FFE5DC; }
 .h-word { font: 400 76px/1 var(--num); letter-spacing: -.04em; text-shadow: 0 6px 0 rgba(142,21,22,.55); }
 .h-sub { font: 600 15px/1.35 var(--text); color: #FFE9E2; max-width: 56%; min-height: 40px; }
-.h-track { margin-top: 14px; height: 8px; border-radius: 4px; background: rgba(255,255,255,.22); overflow: hidden; width: 52%; }
+.h-trackw { position: relative; margin-top: 14px; width: 52%; }
+.h-track { margin-top: 0; height: 8px; border-radius: 4px; background: rgba(255,255,255,.22); overflow: hidden; width: 100%; }
+.h-trackw .wk { position: absolute; bottom: 7px; width: 36px; height: 36px; object-fit: contain; transform: translateX(-60%); opacity: .85; transition: left .8s linear; animation: stride .6s ease-in-out infinite alternate; filter: drop-shadow(0 2px 0 rgba(255,255,255,.35)); }
+@keyframes stride { from { transform: translateX(-60%) translateY(0) rotate(-4deg); } to { transform: translateX(-60%) translateY(-3px) rotate(4deg); } }
 .h-track i { display: block; height: 100%; background: #fff; border-radius: 4px; transition: width .6s cubic-bezier(.2,.9,.3,1); }
 .ily { position: absolute; right: 0; bottom: -88px; width: 156px; height: 156px; z-index: 5; touch-action: manipulation; }
+.ily .zzp { position: absolute; right: 8px; top: -6px; font-size: 22px; pointer-events: none; animation: zzp 2.1s ease-out forwards; }
+@keyframes zzp { from { transform: translate(0, 10px) scale(.6); opacity: 0; } 20% { opacity: 1; } to { transform: translate(14px, -46px) scale(1.2); opacity: 0; } }
 .ily .body { display: block; width: 100%; height: 100%; transform-origin: 50% 90%; animation: breathe 3.2s ease-in-out infinite; }
 .ily img { width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 14px 18px rgba(44,32,24,.35)); }
 .ily img.pop, .bub.pop { animation: pop .55s cubic-bezier(.2,1.6,.4,1); }
@@ -452,6 +457,13 @@ body.hero-on .mast { border-radius: 0; }
 .pill { display: inline-block; font: 800 10.5px/1 var(--text); padding: 4px 7px; border-radius: 7px; background: var(--paper-2); color: var(--ink-2); margin-left: 6px; vertical-align: 1px; text-transform: lowercase; }
 .pl.now .pill { background: var(--red); color: #fff; }
 .pill.red { background: rgba(218,34,39,.13); color: var(--red-text); }
+.pill.nth { background: transparent; box-shadow: inset 0 0 0 1.5px var(--hair); color: var(--ink-2); font-weight: 700; }
+.pill.nth.red { background: rgba(218,34,39,.1); box-shadow: none; color: var(--red-text); }
+.sem { margin-top: 14px; padding: 12px 14px; border-radius: 18px; background: var(--card); box-shadow: var(--shadow); }
+.sem-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font: 600 12.5px var(--text); color: var(--ink-2); }
+.sem-h b { font: 800 14px var(--display); color: var(--ink); }
+.sem-t { height: 8px; margin-top: 8px; border-radius: 4px; background: var(--paper-2); overflow: hidden; }
+.sem-t i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #FF8A66, var(--red)); transition: width .8s var(--e-out); }
 .plg { display: flex; align-items: center; gap: 10px; margin: 0 14px; padding: 8px 10px; border-radius: 16px; background: var(--paper); font: 600 13px var(--text); color: var(--ink-2); }
 .plg img { width: 40px; height: 40px; object-fit: contain; margin: -4px 0; }
 .plg b { color: var(--ink); }
@@ -675,6 +687,50 @@ body.hero-on .mast { border-radius: 0; }
 .gcard .set:last-child, .gcard .disc:last-child { border-bottom: 0; }
 .gcard .set.sub { background: var(--paper); min-height: 56px; }
 .gcard .disc { padding: 12px 14px; }
+
+/* палитры шапки: красный бренда днём, остальное время суток и небо для дней без пар; праздники — свои */
+body[data-pal="night"] { --ha: #2D1F38; --hb: #150F1C; }
+body[data-pal="dawn"] { --ha: #EC5C3B; --hb: #C32B33; }
+body[data-pal="day"] { --ha: #DA2227; --hb: #B81B20; }
+body[data-pal="evening"] { --ha: #B31F36; --hb: #5E1230; }
+body[data-pal="s-night"] { --ha: #2B2A63; --hb: #120F2E; }
+body[data-pal="s-dawn"] { --ha: #FF9560; --hb: #D9487A; }
+body[data-pal="s-day"] { --ha: #3E9FEC; --hb: #2169D0; }
+body[data-pal="s-evening"] { --ha: #F0746B; --hb: #8C3A8F; }
+body[data-pal="ny"] { --ha: #1E2E66; --hb: #0E1736; }
+body[data-pal="tat"] { --ha: #FFA743; --hb: #E0552F; }
+body[data-pal="feb"] { --ha: #66783A; --hb: #36431E; }
+body[data-pal="mar"] { --ha: #F57DA8; --hb: #C2467F; }
+body[data-pal="bday"] { --ha: #E8483F; --hb: #8E1516; }
+body[data-pal="may"] { --ha: #5FC77A; --hb: #2A9158; }
+body[data-pal="vic"] { --ha: #1F2748; --hb: #0B0E22; }
+body[data-pal="aut"] { --ha: #DE9142; --hb: #8E4A1E; }
+.hbg { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; z-index: 0; }
+.hero > :not(.hbg):not(.ily) { position: relative; z-index: 1; }
+.hbg .city { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 74px; fill: rgba(0,0,0,.17); }
+.hbg .city .col { fill: rgba(0,0,0,.2); }
+.hbg .city .w { fill: #FFD98A; opacity: .9; animation: win 4s ease-in-out infinite alternate; }
+@keyframes win { from { opacity: .55; } to { opacity: 1; } }
+.hbg .sun { position: absolute; left: var(--sx); top: var(--sy); width: 70px; height: 70px; margin: -35px 0 0 -35px; border-radius: 50%;
+  background: radial-gradient(circle, #FFF6C8 0 42%, #FFD27A 43% 72%, #FFB45E 73%); box-shadow: 0 0 0 14px rgba(255,236,170,.2), 0 0 54px rgba(255,236,170,.55); transition: left 1s linear, top 1s linear; }
+.hbg .moon { position: absolute; left: var(--sx); top: var(--sy); width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: #FFF3C4;
+  box-shadow: inset -11px -4px 0 #E8D48F, 0 0 34px rgba(255,243,196,.45); }
+.hbg .star { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #fff; animation: tw 2.8s ease-in-out infinite; }
+@keyframes tw { 0%, 100% { opacity: .2; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.5); } }
+.hbg .cloud { position: absolute; left: -90px; height: 15px; border-radius: 9px; background: rgba(255,255,255,.5); animation: drift 26s linear infinite; }
+.hbg .cloud::before { content: ""; position: absolute; left: 14px; top: -10px; width: 26px; height: 22px; border-radius: 50%; background: inherit; }
+@keyframes drift { to { transform: translateX(520px); } }
+.hbg .fx { position: absolute; top: -24px; display: block; animation: fall linear infinite; will-change: transform; }
+.hbg .snow { width: var(--s); height: var(--s); border-radius: 50%; background: #fff; opacity: .85; }
+.hbg .conf { width: 7px; height: 11px; background: var(--c); border-radius: 2px; }
+.hbg .petal { width: 10px; height: 14px; border-radius: 80% 0 80% 0; background: #FFD0E0; opacity: .9; }
+.hbg .em { font-size: 18px; font-style: normal; }
+@keyframes fall { from { transform: translate3d(0, 0, 0) rotate(0); } to { transform: translate3d(var(--dx, 10px), 420px, 0) rotate(var(--r, 180deg)); } }
+.hbg .up { top: auto; bottom: -30px; animation-name: rise; }
+@keyframes rise { to { transform: translate3d(0, -440px, 0); } }
+.hbg .fw { top: 40px; width: 54px; height: 54px; margin-left: -27px; border-radius: 50%; border: 4px dotted var(--c); animation: burst 4.4s ease-out infinite; opacity: 0; }
+@keyframes burst { 0% { transform: scale(.1); opacity: 1; } 60% { opacity: .9; } 100% { transform: scale(2.4); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .hbg .fx, .hbg .cloud, .hbg .star, .hbg .city .w, .h-trackw .wk { animation: none; } }
 .mecard { margin-top: 14px; }
 .panel { margin-top: 14px; padding: 14px; border-radius: 26px; background: linear-gradient(160deg, #EC3134, var(--red) 55%, var(--red-dk)); color: #fff; box-shadow: var(--shadow); }
 .pn-h { display: flex; justify-content: space-between; align-items: baseline; margin: 2px 4px 12px; }
@@ -943,8 +999,24 @@ const DEV_USER = qs.get("dev_user");
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const icon = (n) => `<svg class="i"><use href="#${n.startsWith("w-") ? n : "i-" + n}"/></svg>`;
-const haptic = (t = "light") => { try { tg?.HapticFeedback?.impactOccurred(t); } catch (e) {} };
-const okHaptic = () => { try { tg?.HapticFeedback?.notificationOccurred("success"); } catch (e) {} };
+/* тихие звуки без файлов: короткие тона через WebAudio; по умолчанию выключены («Я» → Звуки) */
+let AC = null;
+const sndOn = () => { try { return localStorage.getItem("snd") === "1"; } catch (e) { return false; } };
+function sfx(kind) {
+  if (!sndOn() || document.hidden) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume();
+    const t = AC.currentTime, tone = (f, d, at = 0, v = .04, type = "sine") => { const o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.setValueAtTime(f, t + at);
+      g.gain.setValueAtTime(0, t + at); g.gain.linearRampToValueAtTime(v, t + at + .012); g.gain.exponentialRampToValueAtTime(.0001, t + at + d); o.connect(g).connect(AC.destination); o.start(t + at); o.stop(t + at + d + .03); };
+    if (kind === "tap") tone(620, .05, 0, .025);
+    else if (kind === "tick") tone(900, .03, 0, .018);
+    else if (kind === "tab") { tone(520, .07, 0, .028); tone(780, .08, .05, .028); }
+    else if (kind === "ok") { tone(660, .1, 0, .04); tone(990, .16, .09, .04); }
+    else if (kind === "alarm") { tone(880, .14, 0, .06, "triangle"); tone(1175, .14, .18, .06, "triangle"); tone(880, .22, .36, .06, "triangle"); }
+  } catch (e) {}
+}
+const haptic = (t = "light") => { sfx(t === "heavy" ? "alarm" : "tap"); try { tg?.HapticFeedback?.impactOccurred(t); } catch (e) {} };
+const okHaptic = () => { sfx("ok"); try { tg?.HapticFeedback?.notificationOccurred("success"); } catch (e) {} };
 const cssVar = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
 
@@ -1031,7 +1103,7 @@ async function apiNet(path, { method = "GET", body } = {}) {
   return j;
 }
 /* сохранённые ответы: открываемся сразу из памяти телефона, свежее подтягиваем фоном; если Mac или туннель лежат — живём на сохранённом */
-const SWR = /^\/api\/(bootstrap|days|home|feed|checklist|study|exams|teachers|news|campus|absences|hidden)(\?|$)/;
+const SWR = /^\/api\/(bootstrap|days|home|feed|checklist|study|exams|teachers|progress|news|campus|absences|hidden)(\?|$)/;
 const ckey = (path) => `c:${tg?.initDataUnsafe?.user?.id || DEV_USER || 0}:${path}`;
 function cget(path) { try { const v = JSON.parse(localStorage.getItem(ckey(path))); return v && Date.now() - v.t < 7 * 864e5 ? v.d : null; } catch (e) { return null; } }
 function cclear() { try { Object.keys(localStorage).filter((k) => k.startsWith("c:")).forEach((k) => localStorage.removeItem(k)); } catch (e) {} }
@@ -1077,7 +1149,7 @@ async function ensureWeek(ws) {
   r.days.forEach((d) => (S.days[d.date] = d));
 }
 async function ensureChecklist() { if (!S.checklist) S.checklist = (await api("/api/checklist")).disciplines; }
-function invalidate() { S.days = {}; S.home = null; S.checklist = null; S.teachers = undefined; }
+function invalidate() { S.days = {}; S.home = null; S.checklist = null; S.teachers = undefined; S.prog = undefined; }
 /* расписание поменялось (выбрали подгруппу, скрыли пару, староста отменил…): сбросить и перечитать то, что сейчас на экране */
 function refreshSchedule() { invalidate(); if (S.tab === "week") openWeek(S.weekStart); else if (S.tab === "day") openDay(S.date); }
 
@@ -1247,9 +1319,9 @@ function renderDay(fromPhase = false) {
     const first = !S.animated.home; S.animated.home = true;
     el.innerHTML = heroHtml(day, p, md) + tilesHtml(day, p)
       + (n ? `<h2 class="h2">${cap(WD_FULL[pd(day.date).getDay()])}<small>${n} ${plural(n, "пара", "пары", "пар")}</small></h2>${pathHtml(day)}` : "")
-      + workCards() + remsHtml(day)
+      + workCards() + `<div id="sem">${semBar()}</div>` + remsHtml(day)
       + `<div class="dnav"><button class="btn ghost" data-day="${addDays(S.today, 1)}">Завтра ${icon("r")}</button></div>`;
-    alarm(p); ensureExams();
+    alarm(p); ensureExams(); ensureProgress();
     $("#hero")?.classList.toggle("urgent", p.k === "late" || (p.k === "leave" && p.left <= 10) || (p.k === "transfer" && p.left <= 10));
     updateMinibar(day, p, md); watchHero();
     if (first && !fromPhase) requestAnimationFrame(enterScene);
@@ -1305,7 +1377,9 @@ function mood(p, day) {
       : { s: 16, t: "Окно", q: R(`Окно ${mins(p.left)}. Можно выдохнуть.`, `Окно ${mins(p.left)}. Можно пожрать по-человечески.`) };
     case "transfer": return { s: 37, t: "Переезд", q: `Едем. ${shortDisc(n.l.discipline)} в ${n.l.begin}, ауд ${aud(n)}.` };
     case "done": return { s: 5, t: "Свобода", q: R("Пары всё. Иди домой, революция подождёт.", "Пары всё. Вали домой, революция подождёт.") };
-    default: return { s: 32, t: "Выходной", q: R("Пар нет. Будильник я выключил, спи.", "Пар нет. Будильник я выключил, спи как убитый.") };
+    default: { const hol = holidayOf(S.today); if (hol) return { s: hol.st, t: hol.n, q: hol.say };
+      if (slotOf() === "night") return { s: "nightcap", t: "Ночь", q: "Тсс. Вождь спит. Ты тоже иди." }; }
+      return { s: 32, t: "Выходной", q: R("Пар нет. Будильник я выключил, спи.", "Пар нет. Будильник я выключил, спи как убитый.") };
   }
 }
 const HLBL = { window: "до начала пары", leave: "до выхода", late: "до начала пары", before: "до начала пары", class: "до конца пары", break: "до начала пары", transfer: "до начала пары", done: "пары закончились", free: "сегодня пар нет" };
@@ -1324,7 +1398,7 @@ function heroSub(day, p) {
 const bigOf = (p) => p.left == null ? null : p.left < 100 ? String(p.left) : `${Math.floor(p.left / 60)}:${String(p.left % 60).padStart(2, "0")}`;
 function countHtml(p) {
   const big = bigOf(p);
-  if (big === null) return `<span class="h-word">${p.k === "free" ? "Спим" : "Всё"}</span>`;
+  if (big === null) return `<span class="h-word">${p.k === "free" ? (holidayOf(S.today) ? "Ура!" : "Спим") : "Всё"}</span>`;
   return `<span class="h-dig">${[...big].map((c) => `<span>${c}</span>`).join("")}</span><span class="h-unit">${p.left < 100 ? "мин" : "ч"}</span>`;
 }
 function flipTo(el, p) {
@@ -1335,19 +1409,86 @@ function flipTo(el, p) {
   if (changed && $("#hero")?.classList.contains("urgent")) haptic("soft");
   el.querySelector(".h-unit").textContent = p.left < 100 ? "мин" : "ч";
 }
+/* ---------- ТЕМА ШАПКИ: время суток, небо выходных, праздники, живая сцена ---------- */
+const slotOf = () => { const h = nowMinMsk() / 60; return h < 5 || h >= 22 ? "night" : h < 9 ? "dawn" : h < 17 ? "day" : "evening"; };
+/* государственные выходные и «свои» праздники продукта; перенос выходных в календаре не учитываем */
+const HOLIDAYS = [
+  { n: "С Новым годом", rs: [["12-31", "12-31"], ["01-01", "01-08"]], pal: "ny", fx: "snow", st: "santa", say: "С Новым годом! Оливье не трогай — это на троих." },
+  { n: "Татьянин день", rs: [["01-25", "01-25"]], pal: "tat", fx: "confetti", st: "grad", say: "С Днём студента! Сессия подождёт. Ну, почти." },
+  { n: "23 февраля", rs: [["02-23", "02-23"]], pal: "feb", fx: "confetti", st: "army", say: "С Днём защитника Отечества! Вольно." },
+  { n: "8 Марта", rs: [["03-08", "03-08"]], pal: "mar", fx: "petals", st: "flowers", say: "С 8 Марта! Цветы — это обязательно." },
+  { n: "День рождения Ильича", rs: [["04-22", "04-22"]], pal: "bday", fx: "confetti", st: "cake", say: "Сегодня мой день. Торт мне, пары — вам." },
+  { n: "Праздник весны и труда", rs: [["05-01", "05-01"]], pal: "may", fx: "petals", st: 5, say: "Первомай! Труд — это хорошо, но выходной лучше." },
+  { n: "День Победы", rs: [["05-09", "05-09"]], pal: "vic", fx: "fireworks", st: 26, say: "С Днём Победы. Помним." },
+  { n: "День России", rs: [["06-12", "06-12"]], pal: "s-day", fx: "confetti", st: 5, say: "С Днём России! Погода — на твоё усмотрение." },
+  { n: "День знаний", rs: [["09-01", "09-01"]], pal: "s-day", fx: "balloons", st: "grad", say: "С 1 сентября! Учиться, учиться и ещё раз учиться." },
+  { n: "День народного единства", rs: [["11-04", "11-04"]], pal: "aut", fx: "leaves", st: 26, say: "С Днём единства! Группа едина — особенно в чате." },
+];
+const holidayOf = (date) => { const md = date.slice(5); return HOLIDAYS.find((h) => h.rs.some(([a, b]) => md >= a && md <= b)) || null; };
+const stkSrc = (n) => (typeof n === "string" ? `static/stickers/gen/${n}.webp` : STK(n));
+function heroTheme(day, p) {
+  const slot = slotOf(), hol = holidayOf(day.date), free = p.k === "free", themed = !!hol && !/^s-/.test(hol.pal);
+  return { slot, hol, free, themed, pal: free ? (themed ? hol.pal : "s-" + slot) : slot };
+}
+function setPal(name) { document.body.dataset.pal = name; }
+const rnd = (i, m) => (Math.abs(Math.sin(i * 127.1 + 311.7) * 43758.5453) % 1) * m;  // детерминированный «случайный» разброс
+function fxHtml(kind) {
+  const n = kind === "fireworks" ? 4 : 14, out = [];
+  for (let i = 0; i < n; i++) {
+    const x = Math.round(rnd(i + 1, 96)), dl = -rnd(i + 5, 7).toFixed(2), du = (5 + rnd(i + 9, 5)).toFixed(1);
+    const st = `left:${x}%;animation-delay:${dl}s;animation-duration:${du}s`;
+    if (kind === "snow") out.push(`<i class="fx snow" style="${st};--s:${3 + Math.round(rnd(i + 2, 5))}px;--dx:${Math.round(rnd(i + 3, 40) - 20)}px"></i>`);
+    else if (kind === "confetti") out.push(`<i class="fx conf" style="${st};--c:${["#FFD25E", "#7FD0F0", "#FF8FB0", "#fff", "#9BE08F"][i % 5]};--dx:${Math.round(rnd(i + 3, 60) - 30)}px;--r:${Math.round(rnd(i, 720))}deg"></i>`);
+    else if (kind === "petals") out.push(`<i class="fx petal" style="${st};--dx:${Math.round(rnd(i + 3, 80) - 40)}px;--r:${Math.round(rnd(i, 540))}deg"></i>`);
+    else if (kind === "leaves") out.push(`<i class="fx em" style="${st};--dx:${Math.round(rnd(i + 3, 70) - 35)}px;--r:${Math.round(rnd(i, 400))}deg">${["🍂", "🍁"][i % 2]}</i>`);
+    else if (kind === "balloons") out.push(`<i class="fx em up" style="${st}">${["🎈", "🎈", "🎊"][i % 3]}</i>`);
+    else if (kind === "fireworks") out.push(`<i class="fx fw" style="left:${14 + i * 22}%;top:${30 + (i % 2) * 40}px;animation-delay:${-i * 1.1}s;--c:${["#FFD25E", "#7FD0F0", "#FF8FB0", "#9BE08F"][i]}"></i>`);
+  }
+  return out.join("");
+}
+const cityHtml = (lit) => {
+  let x = 0, b = "";
+  const hs = [34, 46, 28, 52, 38, 30, 44, 36, 26, 48, 32, 40];
+  hs.forEach((h, i) => { const w = 26 + (i % 3) * 8; b += `<rect x="${x}" y="${90 - h}" width="${w}" height="${h}"/>`; if (lit) for (let k = 0; k < 3; k++) b += `<rect class="w" x="${x + 5 + k * 8}" y="${96 - h + (i % 2) * 6}" width="4" height="5"/>`; x += w + 2; });
+  // главный корпус: фронтон и колонны
+  b += `<path d="M${x + 10} 90V40h92V90z"/><path d="M${x + 4} 40L${x + 56} 18L${x + 108} 40z"/>`;
+  for (let c = 0; c < 5; c++) b += `<rect class="${lit ? "w big" : "col"}" x="${x + 18 + c * 17}" y="48" width="${lit ? 9 : 4}" height="${lit ? 16 : 36}"/>`;
+  return `<svg class="city" viewBox="0 0 ${x + 118} 90" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">${b}</svg>`;
+};
+function sunPos() {  // солнце идёт по дуге с 6 до 19, луна — с 19 до 6
+  const h = nowMinMsk() / 60, day = h >= 6 && h < 19, t = day ? (h - 6) / 13 : ((h >= 19 ? h - 19 : h + 5) / 11);
+  return { day, x: 52 + t * 36, y: 112 - Math.sin(Math.PI * Math.min(1, Math.max(0, t))) * 86 };
+}
+function hbgVars(theme, day, p) {
+  const s = sunPos();
+  return `--sx:${s.x.toFixed(1)}%;--sy:${s.y.toFixed(0)}px`;
+}
+function hbgHtml(theme, day, p) {
+  const night = theme.slot === "night", sky = theme.free;
+  let h = "";
+  if (night || theme.hol?.pal === "vic") h += [0, 1, 2, 3, 4, 5, 6].map((i) => `<i class="star" style="left:${8 + Math.round(rnd(i + 1, 84))}%;top:${10 + Math.round(rnd(i + 4, 110))}px;animation-delay:${-rnd(i + 2, 3).toFixed(1)}s"></i>`).join("");
+  if (sky && !theme.themed) h += sunPos().day ? `<i class="sun"></i>` : `<i class="moon"></i>`;
+  if (sky && !theme.themed && theme.slot !== "night") h += `<i class="cloud" style="top:46px;width:70px"></i><i class="cloud" style="top:112px;width:48px;animation-delay:-9s"></i>`;
+  h += cityHtml(["class", "break", "window"].includes(p.k) || night || theme.slot === "evening");
+  if (theme.hol) h += fxHtml(theme.hol.fx);
+  return `<div class="hbg" id="hbg" style="${hbgVars(theme, day, p)}">${h}</div>`;
+}
+const WALKING = new Set(["leave", "late", "before", "transfer"]);  // пока идём — Ильич шагает по полоске к вузу
+const trackHtml = (p) => `<div class="h-trackw"><div class="h-track"><i id="h-prog" style="width:${pct(p.prog)}"></i></div>${WALKING.has(p.k) ? `<img class="wk" id="h-wk" src="static/stickers/gen/walk.webp" alt="" style="left:${pct(p.prog)}">` : ""}</div>`;
 function heroHtml(day, p, md) {
   const live = ["class", "late", "transfer"].includes(p.k);
-  const lbl = p.k === "window" && p.tr ? "до выезда" : HLBL[p.k];
-  return `<section class="hero" id="hero"><div class="h-date">${cap(WD_FULL[pd(day.date).getDay()])}, ${human(day.date)} · <span id="h-clock">${hhmm(nowMinMsk())}</span></div>
+  const th = heroTheme(day, p); setPal(th.pal);
+  const lbl = th.free && th.hol ? th.hol.n : p.k === "window" && p.tr ? "до выезда" : HLBL[p.k];
+  return `<section class="hero" id="hero">${hbgHtml(th, day, p)}<div class="h-date">${cap(WD_FULL[pd(day.date).getDay()])}, ${human(day.date)} · <span id="h-clock">${hhmm(nowMinMsk())}</span>${pairNo(day, p)}${th.hol && !th.free ? ` · ${esc(th.hol.n)}` : ""}</div>
     <div class="h-lbl">${live ? `<i class="dot"></i>` : ""}${lbl}</div><div class="h-count" id="h-count">${countHtml(p)}</div>
-    <div class="h-sub" id="h-sub">${esc(heroSub(day, p))}</div>${p.prog != null ? `<div class="h-track"><i id="h-prog" style="width:${pct(p.prog)}"></i></div>` : ""}
-    <button class="ily" id="ily" aria-label="Ильич"><span class="body"><img id="ily-img" src="${STK(md.s)}" alt=""></span></button></section>
+    <div class="h-sub" id="h-sub">${esc(heroSub(day, p))}</div>${p.prog != null ? trackHtml(p) : ""}
+    <button class="ily" id="ily" aria-label="Ильич"><span class="body"><img id="ily-img" src="${stkSrc(md.s)}" alt=""></span></button></section>
     <div class="bub" id="bub"><small>${esc(md.t)}</small>${esc(md.q)}</div>`;
 }
 const pop = (el) => { el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); };
 function setIly(s, q, t) {
   const img = $("#ily-img"), b = $("#bub"); if (!img || !b) return;
-  if (!img.src.endsWith(STK(s))) swapSticker(img, STK(s));
+  if (!img.src.endsWith(stkSrc(s))) swapSticker(img, stkSrc(s));
   const html = `<small>${esc(t)}</small>${esc(q)}`;
   if (b.innerHTML !== html) swapBubble(b, html);
 }
@@ -1361,6 +1502,20 @@ function ilyTap() {
   const [s, q] = TAPS[tapI++ % TAPS.length];
   setIly(s, Array.isArray(q) ? R(q[0], q[1]) : q, "Ильич");
   tapUntil = Date.now() + 4000; setTimeout(tickHero, 4100);
+}
+/* Ильич иногда сам: кивает, подпрыгивает, машет, ночью зевает; не мешает, когда тапают или открыта шторка */
+let idleT;
+function idleLoop() { clearTimeout(idleT); idleT = setTimeout(() => { idleOnce(); idleLoop(); }, 8000 + Math.random() * 8000); }
+function idleOnce() {
+  const img = $("#ily-img"); if (!img || REDUCE || S.tab !== "day" || document.hidden || Date.now() < tapUntil || $("#sheet").classList.contains("on")) return;
+  const night = slotOf() === "night", pick = night && Math.random() < .6 ? "yawn" : ["look", "hop", "wave", "lean"][Math.floor(Math.random() * 4)];
+  const T = { look: [{ transform: "none" }, { transform: "rotate(-7deg) translateX(-4px)" }, { transform: "rotate(4deg)" }, { transform: "none" }],
+    hop: [{ transform: "none" }, { transform: "translateY(-16px) scale(.97,1.04)" }, { transform: "translateY(0) scale(1.05,.94)" }, { transform: "none" }],
+    wave: [{ transform: "none" }, { transform: "rotate(-5deg)" }, { transform: "rotate(5deg)" }, { transform: "rotate(-5deg)" }, { transform: "rotate(5deg)" }, { transform: "none" }],
+    lean: [{ transform: "none" }, { transform: "translateX(-10px) rotate(-4deg)" }, { transform: "translateX(-10px) rotate(-4deg)" }, { transform: "none" }],
+    yawn: [{ transform: "none" }, { transform: "scale(1.06,1.1) translateY(-4px)" }, { transform: "scale(1.06,1.1) translateY(-4px)" }, { transform: "none" }] }[pick];
+  anim(img, T, { duration: pick === "wave" ? 1100 : 900, easing: EASE.soft, fill: "none" });
+  if (pick === "yawn") { const z = document.createElement("span"); z.className = "zzp"; z.textContent = "💤"; $("#ily")?.appendChild(z); setTimeout(() => z.remove(), 2200); }
 }
 function alarm(p) {
   if (!(p.k === "late" || (p.k === "leave" && p.left <= 5))) return;
@@ -1377,6 +1532,9 @@ function tickHero() {
   flipTo($("#h-count"), p);
   $("#h-sub").textContent = heroSub(day, p);
   const pr = $("#h-prog"); if (pr && p.prog != null) pr.style.width = pct(p.prog);
+  const wk = $("#h-wk"); if (wk && p.prog != null) wk.style.left = pct(p.prog);
+  const th = heroTheme(day, p), bg = $("#hbg");
+  if (document.body.dataset.pal !== th.pal) { setPal(th.pal); if (bg) bg.outerHTML = hbgHtml(th, day, p); } else if (bg) bg.style.cssText = hbgVars(th, day, p);
   if (Date.now() > tapUntil) { const md = mood(p, day); setIly(md.s, md.q, md.t); }
   const pl = $("#plist"); if (pl) pl.outerHTML = pathHtml(day);
   updateMinibar(day, p, mood(p, day));
@@ -1466,7 +1624,7 @@ function renderGroup() {
   bootDone();
   const f = S.feed, el = $("#v-group"), g = S.me.group?.label || "";
   const chats = f.chats.length ? `Ильич сидит в беседе «${esc(f.chats[0].title)}»${f.chats.length > 1 ? ` и ещё ${f.chats.length - 1}` : ""}` : "Ильича ещё нет в беседе группы — добавь, буду ловить #дз";
-  if (S.tab === "group") document.body.classList.add("hero-on");
+  if (S.tab === "group") { document.body.classList.add("hero-on"); setPal(slotOf()); }
   let html = `<section class="hero"><div class="h-date">Твоя группа</div><div class="h-lbl">в «Паре»</div>
     <div class="h-count" style="height:auto;margin:8px 0 6px"><span class="h-word" style="font-size:${g.length <= 5 ? 76 : g.length === 6 ? 62 : g.length === 7 ? 52 : g.length <= 9 ? 44 : 36}px">${esc(g)}</span></div>
     <div class="h-sub">${f.members ?? 0} ${plural(f.members ?? 0, "человек", "человека", "человек")}${f.roster_total ? ` из\u00a0${f.roster_total}` : ""}</div>
@@ -1686,6 +1844,23 @@ function worksSheet() {
     `<button class="remc" data-open="${w.date}"><b>${pd(w.date).getDate()}.${String(pd(w.date).getMonth() + 1).padStart(2, "0")}</b><span><span class="t">${esc(w.label)} · ${esc(shortDisc(w.discipline))}</span>
       <small>${cap(relDay(w.date))}${w.begin ? `, ${w.begin}` : ""}${w.note ? ` · ${esc(w.note)}` : ""}</small></span></button>`).join("") : `<div class="note">Пока ничего не видно.</div>`}</div>`);
 }
+const nthOf = (l) => S.prog?.lessons?.[l.oid];
+const nthPill = (l) => { const x = nthOf(l); return x ? `<span class="pill nth ${x[2] ? "red" : ""}">${x[2] === 2 ? "последняя перед зачётом" : x[2] === 1 ? "последняя" : `${x[0]}/${x[1]}`}</span>` : ""; };
+const pairNo = (day, p) => {  // «2-я из 4»: какая по счёту пара сегодня
+  const n = day.slots.length, done = day.slots.filter((s) => Date.parse(s.lessons[0].starts) <= now()).length;
+  return !n ? "" : p.k === "class" ? ` · ${done}-я из ${n}` : ["break", "window", "transfer"].includes(p.k) ? ` · прошло ${done} из ${n}` : "";
+};
+async function ensureProgress() {
+  if (S.prog !== undefined || S.progLoading) return;
+  S.progLoading = true;
+  try { S.prog = await api("/api/progress"); } catch (e) { S.prog = null; }
+  S.progLoading = false;
+  if (S.tab === "day" && S.date === S.today && S.days[S.today]) { const pl = $("#plist"); if (pl) pl.outerHTML = pathHtml(S.days[S.today]); const sm = $("#sem"); if (sm) sm.innerHTML = semBar(); }
+}
+function semBar() {
+  const g = S.prog; if (!g || g.share == null || g.share <= 0 || g.share >= 1) return "";
+  return `<div class="sem"><div class="sem-h"><b>Семестр</b><span>${Math.round(g.share * 100)}%${g.weeks_left ? ` · осталось ${g.weeks_left} ${plural(g.weeks_left, "неделя", "недели", "недель")} занятий` : ""}</span></div><div class="sem-t"><i style="width:${Math.round(g.share * 100)}%"></i></div></div>`;
+}
 function pathHtml(day) {
   const slots = day.slots; if (!slots.length && !(day.overrides || []).length) return "";
   let rows = "";
@@ -1701,7 +1876,7 @@ function pathHtml(day) {
     else {
       const st = lessonState(l);
       rows += `<button class="pl ${st === "next" ? "" : st}" data-act="lesson" data-oid="${l.oid}" data-date="${l.date}"><span class="tm">${l.begin}<small>${l.end}</small></span>
-        <span class="nm">${esc(l.discipline)}<span class="pill ${HOT.has(l.tag) || l.replaces ? "red" : ""}">${st === "now" ? "сейчас" : l.replaces ? "изменение" : esc(l.kind)}</span>${(l.assess || []).map((a) => `<span class="pill as">📝 ${esc(a.label)}</span>`).join("")}</span>
+        <span class="nm">${esc(l.discipline)}<span class="pill ${HOT.has(l.tag) || l.replaces ? "red" : ""}">${st === "now" ? "сейчас" : l.replaces ? "изменение" : esc(l.kind)}</span>${nthPill(l)}${(l.assess || []).map((a) => `<span class="pill as">📝 ${esc(a.label)}</span>`).join("")}</span>
         <span class="rm">${esc(audNo(l.auditorium) || "—")}</span><span class="pp">${esc([l.lecturer, (!i || slots[i - 1].lessons[0].building !== l.building) && bshort(l.building)].filter(Boolean).join(" · ") || " ")}</span>
         ${(l.assess || []).filter((a) => a.note).map((a) => `<span class="pp asn">📝 ${esc(a.note)}</span>`).join("")}</button>`;
     }
@@ -1719,8 +1894,8 @@ function pathHtml(day) {
 const REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const EASE = { out: "cubic-bezier(.22,1,.36,1)", soft: "cubic-bezier(.32,.72,0,1)", spring: "cubic-bezier(.34,1.3,.64,1)" };
 const anim = (el, kf, o) => (!el || REDUCE ? null : el.animate(kf, { duration: 320, easing: EASE.out, fill: "both", ...o }));
-const hsel = () => { try { tg?.HapticFeedback?.selectionChanged(); } catch (e) {} };
-const hnote = (t = "success") => { try { tg?.HapticFeedback?.notificationOccurred(t); } catch (e) {} };
+const hsel = () => { sfx("tick"); try { tg?.HapticFeedback?.selectionChanged(); } catch (e) {} };
+const hnote = (t = "success") => { sfx("ok"); try { tg?.HapticFeedback?.notificationOccurred(t); } catch (e) {} };
 
 /* выход дня: первое открытие за день — Ильич вбегает и «раскладывает» плитки, дальше — быстро */
 function enterScene() {
@@ -1860,7 +2035,7 @@ function watchHero() {
 function updateMinibar(day, p, md) {
   const mb = $("#minibar"); if (!mb) return;
   const big = bigOf(p), unit = p.left < 100 ? "мин" : "ч";
-  mb.innerHTML = `<img src="${STK(md.s)}" alt=""><b>${big === null ? (p.k === "free" ? "Спим" : "Всё") : big + " " + unit}</b><span>${esc((p.k === "window" && p.tr ? "до выезда" : HLBL[p.k]) + " · " + heroSub(day, p))}</span>`;
+  mb.innerHTML = `<img src="${stkSrc(md.s)}" alt=""><b>${big === null ? (p.k === "free" ? "Спим" : "Всё") : big + " " + unit}</b><span>${esc((p.k === "window" && p.tr ? "до выезда" : HLBL[p.k]) + " · " + heroSub(day, p))}</span>`;
 }
 
 /* шторка тянется вниз и закрывается */
@@ -1998,6 +2173,7 @@ function lessonSheet(oid, date) {
     <div class="grow"><h4>${esc(l.discipline)}</h4><div class="muted tiny">${cap(short(l.date))}, ${l.begin}–${l.end} · ${esc(l.kind)}</div></div></div>
     <dl class="kv">
       ${l.auditorium ? `<dt>Аудитория</dt><dd>${esc(l.auditorium)}</dd>` : ""}
+      ${nthOf(l) ? `<dt>Пара</dt><dd>${nthOf(l)[0]} из ${nthOf(l)[1]}${nthOf(l)[2] === 2 ? " · последняя перед зачётом" : nthOf(l)[2] === 1 ? " · последняя" : ""}</dd>` : ""}
       ${l.building ? `<dt>Корпус</dt><dd>${esc(l.building)}</dd>` : ""}
       ${l.floor ? `<dt>Где искать</dt><dd>${esc(l.floor)}</dd>` : ""}
       ${l.email ? `<dt>Почта</dt><dd>${esc(l.email)}</dd>` : ""}
@@ -2247,7 +2423,7 @@ function meSummary() {
 function renderMe() {
   bootDone();
   const m = S.me, el = $("#v-me"), su = meSummary(), trip = tripLine();
-  if (S.tab === "me") document.body.classList.add("hero-on");
+  if (S.tab === "me") { document.body.classList.add("hero-on"); setPal(slotOf()); }
   el.innerHTML = `
     ${trip ? `<section class="hero"><div class="h-date">${esc(m.name || "Студент")} · ${esc(m.group?.label || "группа не выбрана")}</div>
       <div class="h-lbl">${trip.label}</div><div class="h-count">${trip.word ? `<span class="h-word">${trip.word}</span>` : `<span class="h-dig t"><span>${[...trip.big].join("</span><span>")}</span></span>`}</div>
@@ -2267,6 +2443,7 @@ function renderMe() {
       <button class="mtile" data-act="mesec" data-sec="more"><span class="ic">${icon("cal")}</span><b>Календарь</b><span>Google, Apple, Яндекс</span></button></div>
     <div class="gcard mecard">
       <div class="set"><div class="l"><b>Ильич без цензуры</b><span>крепкие словечки — только у тебя</span></div>${sw("raw", rawOn())}</div>
+      <div class="set"><div class="l"><b>Звуки</b><span>тихие щелчки и звоночек — выключены по умолчанию</span></div>${sw("snd", sndOn())}</div>
       <div class="set"><div class="l"><b>Живой закреп</b><span>сверху в чате с ботом: что сейчас и что дальше</span></div>${sw("pin_on", m.pin_on)}</div>
       ${tg?.addToHomeScreen ? `<div class="set"><div class="l"><b>Иконка на экране «Домой»</b><span>открывать «Пару» как приложение</span></div><button class="btn sm ghost" data-act="home-screen">Добавить</button></div>` : ""}</div>
     ${m.admin ? `<div class="gcard mecard">${meRow("stats", "Статистика", "видишь только ты", "chart")}</div>` : ""}
@@ -2529,7 +2706,7 @@ function setTab(t) {
   const dir = Math.sign(TAB_ORDER.indexOf(t) - TAB_ORDER.indexOf(S.tab));
   document.documentElement.style.setProperty("--dir", String(dir || 0));
   if (t !== "day") $("#minibar")?.classList.remove("on");
-  S.tab = t; trackE("tab:" + t);
+  S.tab = t; trackE("tab:" + t); sfx("tab");
   document.querySelectorAll(".tab").forEach((b) => { b.classList.toggle("on", b.dataset.tab === t); b.setAttribute("aria-current", b.dataset.tab === t ? "page" : "false"); });
   document.querySelectorAll(".view").forEach((s) => s.classList.toggle("on", s.id === "v-" + t));
   window.scrollTo(0, 0);
@@ -2755,6 +2932,7 @@ document.addEventListener("click", async (e) => {
     else if (k === "evening_toggle") { S.me.evening = on ? "21:00" : null; queueSave({ evening: S.me.evening }); }
     else if (k === "nolessons_toggle") { S.me.nolessons = on ? "09:00" : null; queueSave({ nolessons: S.me.nolessons }); }
     else if (k === "raw") { try { localStorage.setItem("raw", on ? "1" : "0"); } catch (er) {} }
+    else if (k === "snd") { try { localStorage.setItem("snd", on ? "1" : "0"); } catch (er) {} if (on) sfx("ok"); }
     else { S.me[k] = on; queueSave({ [k]: on }); }
     renderMe(); return;
   }
@@ -2808,7 +2986,7 @@ function start() {
   if (["person", "auditorium", "free", "campus"].includes(qs.get("ftype"))) S.find.type = qs.get("ftype");
   setTab({ home: "day", sched: "day", things: "me", set: "me" }[tab] || (["day", "week", "group", "find", "me"].includes(tab) ? tab : "day"));
   setInterval(() => { if (!$("#sheet").classList.contains("on")) { if (S.tab === "day" && S.days[S.date] && S.date !== S.today) renderDay(); if (S.tab === "week" && S.days[S.weekStart]) renderWeek(); } }, 60000);
-  setInterval(tickHero, 15000);
+  setInterval(tickHero, 15000); idleLoop();
 }
 (async function boot() {
   applyTheme();
