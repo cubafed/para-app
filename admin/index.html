@@ -141,21 +141,34 @@ const store = { get: (k) => { try { return localStorage.getItem(k); } catch (e) 
 
 /* адрес API: на GitHub Pages — текущий туннель Mac из url.json, на самом Mac — тот же адрес */
 const ON_PAGES = location.hostname.endsWith("github.io");
-let API = null;
-async function base(force = false) {
-  if (!ON_PAGES) return "";
-  if (API && !force) return API;
-  const r = await fetch(`https://api.github.com/repos/cubafed/para-app/contents/url.json?t=${Date.now()}`, { headers: { Accept: "application/vnd.github.raw+json" }, cache: "no-store" })
-    .then((x) => (x.ok ? x.json() : Promise.reject())).catch(() => fetch(`../url.json?t=${Date.now()}`, { cache: "no-store" }).then((x) => x.json()));
-  return (API = String(r.url || "").replace(/\/$/, ""));
+let API = ON_PAGES ? store.get("api-base") : "", baseP = null;
+const tfetch = (url, opts = {}, ms = 15000) => {  // у любого запроса есть предел: лучше ошибка, чем вечная загрузка
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), ms);
+  return fetch(url, { ...opts, signal: ctl.signal }).finally(() => clearTimeout(t));
+};
+function base(force = false) {
+  if (!ON_PAGES) return Promise.resolve("");
+  if (API && !force) return Promise.resolve(API);
+  if (baseP) return baseP;  // три запроса разом — один поход за адресом
+  baseP = tfetch(`https://api.github.com/repos/cubafed/para-app/contents/url.json?t=${Date.now()}`, { headers: { Accept: "application/vnd.github.raw+json" }, cache: "no-store" }, 8000)
+    .then((x) => (x.ok ? x.json() : Promise.reject()))
+    .catch(() => tfetch(`../url.json?t=${Date.now()}`, { cache: "no-store" }, 8000).then((x) => x.json()))
+    .then((r) => { API = String(r.url || "").replace(/\/$/, ""); store.set("api-base", API); return API; })
+    .finally(() => { baseP = null; });
+  return baseP;
 }
 async function api(path, { method = "GET", body } = {}) {
   const headers = { "X-Admin-Token": store.get("adm") || "" };
   if (body !== undefined) headers["Content-Type"] = "application/json";
-  const go = async (b) => fetch(b + path, { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined });
+  const long = path === "/api/admin/broadcast" && body?.confirm != null;  // рассылка всем идёт долго
+  const go = async (b) => tfetch(b + path, { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined }, long ? 600000 : 20000);
+  const dead = (r) => !(r.headers.get("content-type") || "").includes("json") && r.status >= 400;  // страница туннеля, а не наш сервер
   let r;
-  try { r = await go(await base()); if (!(r.headers.get("content-type") || "").includes("json") && r.status >= 400) throw 0; }
-  catch (e) { r = await go(await base(true)); }
+  try { r = await go(await base()); if (dead(r)) throw 0; }
+  catch (e) {
+    if (long) throw Object.assign(new Error("net"), { status: 0 });  // рассылку не повторяем вслепую
+    try { r = await go(await base(true)); } catch (e2) { throw Object.assign(new Error("net"), { status: 0 }); }
+  }
   const j = await r.json().catch(() => ({}));
   if (r.status === 401 && path !== "/api/admin/login") { store.set("adm", null); showLogin("Сессия закончилась, войди заново"); throw new Error("401"); }
   if (!r.ok) { const e = new Error(j.error || r.status); e.status = r.status; e.data = j; throw e; }
@@ -181,7 +194,7 @@ async function open(sec) {
   const m = $("#main"); m.innerHTML = `<div class="skel"></div>`;
   const [name, arg] = sec.split(":");
   try { m.innerHTML = await ({ overview, requests, users, groups, broadcast, support, sources, content, user: userCard, group: groupCard, chat }[name] || overview)(arg); after(name, arg); }
-  catch (e) { if (e.message !== "401") m.innerHTML = `<div class="empty"><img src="../static/stickers/11.webp" alt="">Не получилось загрузить. Проверь, что Mac и бот включены.<br><br><button class="btn ghost" data-sec="${sec}">Ещё раз</button></div>`; }
+  catch (e) { if (e.message !== "401") m.innerHTML = `<div class="empty"><img src="../static/stickers/11.webp" alt="">${e.status === 0 ? "Нет связи с ботом на Mac: туннель не отвечает. Проверь, что Mac не спит и VPN включён." : "Не получилось загрузить (" + esc(e.message) + ")."}<br><br><button class="btn ghost" data-sec="${sec}">Ещё раз</button></div>`; }
 }
 document.addEventListener("click", async (e) => {
   const a = e.target.closest("[data-act]");
