@@ -132,6 +132,7 @@ tr.link{cursor:pointer}tr.link:hover td{background:rgba(218,34,39,.05)}
 "use strict";
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const cap = (t) => String(t).charAt(0).toUpperCase() + String(t).slice(1);
 const plural = (n, a, b, c) => { const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? a : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? b : c; };
 const MON = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
 const human = (iso) => { if (!iso) return "—"; const [y, m, d] = iso.slice(0, 10).split("-").map(Number); return `${d} ${MON[m - 1]}`; };
@@ -187,31 +188,38 @@ $("#lform").onsubmit = async (e) => {
 /* разделы */
 const S = { sec: location.hash.slice(1) || "overview" };
 const SECS = [["overview", "Обзор"], ["support", "Обращения"], ["requests", "Заявки старост"], ["users", "Люди"], ["groups", "Группы"], ["sources", "Откуда пришли"], ["content", "Модерация"], ["broadcast", "Рассылка"]];
-function navHtml() { return SECS.map(([k, t]) => `<button class="${S.sec === k ? "on" : ""}" data-sec="${k}">${t}${k === "requests" && S.pending ? `<span class="n">${S.pending}</span>` : ""}${k === "support" && S.unread ? `<span class="n">${S.unread}</span>` : ""}</button>`).join(""); }
+function navHtml() { return SECS.map(([k, t]) => `<button class="${S.sec.split(":")[0] === k || (k === "users" && S.sec.startsWith("user:")) || (k === "groups" && S.sec.startsWith("group:")) || (k === "support" && S.sec.startsWith("chat:")) ? "on" : ""}" data-sec="${k}">${t}${k === "requests" && S.pending ? `<span class="n">${S.pending}</span>` : ""}${k === "support" && S.unread ? `<span class="n">${S.unread}</span>` : ""}</button>`).join(""); }
 function paint() { $("#nav").innerHTML = navHtml(); $("#nav2").innerHTML = navHtml(); }
-async function open(sec) {
-  S.sec = sec; history.replaceState(null, "", "#" + sec); paint(); window.scrollTo(0, 0);
-  const m = $("#main"); m.innerHTML = `<div class="skel"></div>`;
+let navSeq = 0;
+/* переход по разделам: адрес в истории браузера (кнопка «назад» работает), устаревший ответ не перетирает новый экран */
+async function go(sec, push = true) {
+  if (push && location.hash.slice(1) !== sec) { history.pushState(null, "", "#" + sec); S.navs = (S.navs || 1) + 1; }
+  S.sec = sec; paint(); window.scrollTo(0, 0);
+  document.querySelector("#nav2 .on")?.scrollIntoView({ inline: "center", block: "nearest" });
+  const seq = ++navSeq, m = $("#main"); m.innerHTML = `<div class="skel"></div>`;
   const [name, arg] = sec.split(":");
-  try { m.innerHTML = await ({ overview, requests, users, groups, broadcast, support, sources, content, user: userCard, group: groupCard, chat }[name] || overview)(arg); after(name, arg); }
-  catch (e) { if (e.message !== "401") m.innerHTML = `<div class="empty"><img src="../static/stickers/11.webp" alt="">${e.status === 0 ? "Нет связи с ботом на Mac: туннель не отвечает. Проверь, что Mac не спит и VPN включён." : "Не получилось загрузить (" + esc(e.message) + ")."}<br><br><button class="btn ghost" data-sec="${sec}">Ещё раз</button></div>`; }
+  try { const html = await ({ overview, requests, users, groups, broadcast, support, sources, content, user: userCard, group: groupCard, chat }[name] || overview)(arg); if (seq !== navSeq) return; m.innerHTML = html; after(name, arg); }
+  catch (e) { if (seq === navSeq && e.message !== "401") m.innerHTML = `<div class="empty"><img src="../static/stickers/11.webp" alt="">${e.status === 0 ? "Нет связи с ботом на Mac: туннель не отвечает. Проверь, что Mac не спит и VPN включён." : "Не получилось загрузить (" + esc(e.message) + ")."}<br><br><button class="btn ghost" data-sec="${sec}">Ещё раз</button></div>`; }
 }
 document.addEventListener("click", async (e) => {
   const a = e.target.closest("[data-act]");
-  const sb = e.target.closest("[data-sec]"); if (sb && !a) return open(sb.dataset.sec);
+  const sb = e.target.closest("[data-sec]"); if (sb && !a) return go(sb.dataset.sec);
   if (!a) return; const act = a.dataset.act;
+  if (act === "back") { if ((S.navs || 1) > 1) { S.navs--; return history.back(); } return go(a.dataset.secFallback); }
   if (act === "logout") { store.set("adm", null); return showLogin(); }
-  if (act === "logout-all") { if (!confirm("Выйти на всех устройствах? Понадобится пароль заново.")) return; await api("/api/admin/logout-all", { method: "POST" }).catch(() => {}); store.set("adm", null); return showLogin("Вышел везде"); }
-  if (act === "decide") { a.disabled = true; try { await api(`/api/admin/requests/${a.dataset.id}`, { method: "POST", body: { ok: a.dataset.ok === "1" } }); toast(a.dataset.ok === "1" ? "Одобрено — человеку пришло сообщение" : "Отказано"); open("requests"); } catch (er) { toast("Не получилось"); a.disabled = false; } return; }
+  if (act === "logout-all") { if (!confirm("Выйти на всех устройствах? Понадобится пароль заново.")) return; try { await api("/api/admin/logout-all", { method: "POST" }); } catch (er) { return toast("Не получилось: нет связи с ботом. Попробуй ещё раз"); } store.set("adm", null); return showLogin("Вышел на всех устройствах"); }
+  if (act === "decide") { a.disabled = true; try { await api(`/api/admin/requests/${a.dataset.id}`, { method: "POST", body: { ok: a.dataset.ok === "1" } }); toast(a.dataset.ok === "1" ? "Одобрено — человеку пришло сообщение" : "Отказано"); go("requests"); } catch (er) { toast("Не получилось"); a.disabled = false; } return; }
   if (act === "role") { const to = a.dataset.role; if (!confirm(to === "starosta" ? "Назначить старостой? Человеку придёт сообщение." : "Снять роль старосты? Человеку придёт сообщение.")) return;
-    try { await api(`/api/admin/users/${a.dataset.id}/role`, { method: "POST", body: { role: to } }); toast("Готово"); loadUsers(); } catch (er) { toast(er.message === "no_group" ? "У человека не выбрана группа" : "Не получилось"); } return; }
+    a.disabled = true;
+    try { await api(`/api/admin/users/${a.dataset.id}/role`, { method: "POST", body: { role: to } }); toast(to === "starosta" ? "Назначен старостой" : "Роль старосты снята"); S.sec.startsWith("user:") ? go(S.sec, false) : loadUsers(); }
+    catch (er) { a.disabled = false; toast(er.message === "no_group" ? "У человека не выбрана группа" : `Не получилось (${er.message})`); } return; }
   if (act === "bar") { document.querySelectorAll(".bar.on").forEach((x) => x.classList.remove("on")); a.classList.add("on"); $("#tip").textContent = a.dataset.tip; return; }
   if (act === "bc-check") return bcCheck();
-  if (act === "reply") return sendReply(a.dataset.id);
-  if (act === "reset") { if (!confirm("Сбросить настройку? При следующем открытии человек снова пройдёт первый запуск.")) return; try { await api(`/api/admin/users/${a.dataset.id}/reset`, { method: "POST" }); toast("Сброшено"); open(`user:${a.dataset.id}`); } catch (er) { toast("Не получилось"); } return; }
+  if (act === "reply") return sendReply(a.dataset.id, a);
+  if (act === "reset") { if (!confirm("Сбросить настройку? При следующем открытии человек снова пройдёт первый запуск.")) return; a.disabled = true; try { await api(`/api/admin/users/${a.dataset.id}/reset`, { method: "POST" }); toast("Настройка сброшена"); go(`user:${a.dataset.id}`, false); } catch (er) { a.disabled = false; toast(`Не получилось (${er.message})`); } return; }
   if (act === "move") return moveGroup(a.dataset.id);
-  if (act === "del") { if (!confirm("Удалить у всей группы? Отменить нельзя.")) return; try { await api(`/api/admin/content/${a.dataset.kind}/${a.dataset.id}`, { method: "DELETE" }); a.closest("tr").remove(); toast("Удалено"); } catch (er) { toast("Не получилось"); } return; }
-  if (act === "ckind") { S.ckind = a.dataset.kind; return open("content"); }
+  if (act === "del") { if (!confirm("Удалить у всей группы? Отменить нельзя.")) return; a.disabled = true; try { await api(`/api/admin/content/${a.dataset.kind}/${a.dataset.id}`, { method: "DELETE" }); const tb = a.closest("tbody"); a.closest("tr").remove(); if (tb && !tb.children.length) $("#cres").innerHTML = `<div class="card empty">Пусто</div>`; toast("Удалено"); } catch (er) { a.disabled = false; toast(`Не получилось (${er.message})`); } return; }
+  if (act === "ckind") { S.ckind = a.dataset.kind; return go("content"); }
   if (act === "bc-send") return bcSend();
 });
 
@@ -244,12 +252,15 @@ async function users() {
   return `<h2 class="t">Люди</h2><div class="sub">Поиск по имени, группе или Telegram id</div>
     <div class="toolbar"><input class="input" id="uq" placeholder="Например: ПИ25-1 или Иванов" autocomplete="off" value="${esc(S.uq || "")}"></div><div id="ures"><div class="skel"></div></div>`;
 }
+let uSeq = 0, cSeq = 0;
 async function loadUsers() {
   const box = $("#ures"); if (!box) return;
+  const seq = ++uSeq;
   try {
     const u = (await api(`/api/admin/users?q=${encodeURIComponent(S.uq || "")}`)).users;
+    if (seq !== uSeq) return;
     box.innerHTML = !u.length ? `<div class="card empty">Никого не нашёл</div>` : `<div class="tw"><table><thead><tr><th>Имя</th><th>Группа</th><th>Роль</th><th>Был</th><th>С нами с</th><th></th></tr></thead><tbody>
-      ${u.map((x) => `<tr class="link" data-sec="user:${x.id}"><td><b>${esc(x.name || "без имени")}</b><br><span class="muted">id ${x.id}${x.active ? "" : " · заблокировал бота"}${x.onboarded ? "" : " · не прошёл настройку"}</span></td>
+      ${u.map((x) => `<tr class="link" tabindex="0" data-sec="user:${x.id}"><td><b>${esc(x.name || "без имени")}</b><br><span class="muted">id ${x.id}${x.active ? "" : " · заблокировал бота"}${x.onboarded ? "" : " · не прошёл настройку"}</span></td>
         <td>${esc(x.group || "—")}</td><td>${x.role === "starosta" ? `<span class="pill red">староста</span>` : `<span class="pill">студент</span>`}</td><td>${ago(x.last)}</td><td>${human(x.created)}</td>
         <td class="num">${x.role === "starosta" ? `<button class="btn sm ghost" data-act="role" data-id="${x.id}" data-role="student">Снять старосту</button>` : x.group ? `<button class="btn sm ghost" data-act="role" data-id="${x.id}" data-role="starosta">Сделать старостой</button>` : ""}</td></tr>`).join("")}</tbody></table></div>`;
   } catch (e) { if (e.message !== "401") box.innerHTML = `<div class="card empty">Не получилось загрузить</div>`; }
@@ -258,16 +269,16 @@ async function groups() {
   const g = (await api("/api/admin/groups")).groups;
   return `<h2 class="t">Группы</h2><div class="sub">${g.length} ${plural(g.length, "группа", "группы", "групп")} с людьми в «Паре»</div>` + (!g.length ? `<div class="card empty">Пока никого</div>` : `<div class="tw"><table>
     <thead><tr><th>Группа</th><th class="num">Людей</th><th class="num">Прошли настройку</th><th class="num">Активны 7 дн.</th><th class="num">В списке группы</th><th>Старосты</th><th>Беседа</th></tr></thead><tbody>
-    ${g.map((x) => `<tr class="link" data-sec="group:${x.id}"><td><b>${esc(x.label)}</b></td><td class="num">${x.users}</td><td class="num">${x.onboarded}</td><td class="num"><b>${x.active7}</b></td><td class="num">${x.roster || "—"}</td>
+    ${g.map((x) => `<tr class="link" tabindex="0" data-sec="group:${x.id}"><td><b>${esc(x.label)}</b></td><td class="num">${x.users}</td><td class="num">${x.onboarded}</td><td class="num"><b>${x.active7}</b></td><td class="num">${x.roster || "—"}</td>
       <td>${x.starostas.length ? x.starostas.map(esc).join(", ") : `<span class="muted">нет</span>`}</td><td>${x.chats.length ? esc(x.chats.join(", ")) : `<span class="muted">нет</span>`}</td></tr>`).join("")}</tbody></table></div>`);
 }
-const dt = (iso) => { const d = new Date(iso); return `${d.getDate()} ${MON[d.getMonth()]}, ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
-const back = (sec, t) => `<button class="btn sm ghost" data-sec="${sec}" style="margin-bottom:14px">← ${t}</button>`;
+const dt = (iso) => { const d = new Date(new Date(iso).getTime() + 3 * 3600e3); return `${d.getUTCDate()} ${MON[d.getUTCMonth()]}, ${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`; };  // Москва, а не часы браузера
+const back = (sec, t) => `<button class="btn sm ghost" data-act="back" data-sec-fallback="${sec}" style="margin-bottom:14px">← ${t}</button>`;
 async function support() {
   const r = await api("/api/admin/support"); S.unread = r.unread; paint();
   if (!r.threads.length) return `<h2 class="t">Обращения</h2><div class="sub">Люди пишут через /support в боте или «Написать разработчику» в приложении</div><div class="card empty"><img src="../static/stickers/26.webp" alt="">Пока никто не писал</div>`;
   return `<h2 class="t">Обращения</h2><div class="sub">${r.unread ? `Непрочитанных: ${r.unread}` : "Всё прочитано"}</div><div class="tw"><table><thead><tr><th>Кто</th><th>Последнее</th><th>Когда</th><th></th></tr></thead><tbody>
-    ${r.threads.map((t) => `<tr class="link" data-sec="chat:${t.user_id}"><td><b>${esc(t.name)}</b><br><span class="muted">${esc(t.group || "без группы")}</span></td>
+    ${r.threads.map((t) => `<tr class="link" tabindex="0" data-sec="chat:${t.user_id}"><td><b>${esc(t.name)}</b><br><span class="muted">${esc(t.group || "без группы")}</span></td>
       <td>${t.last.from_admin ? `<span class="muted">Ты: </span>` : ""}${esc(t.last.text.slice(0, 120))}${t.last.text.length > 120 ? "…" : ""}</td><td>${dt(t.last.at)}</td>
       <td class="num">${t.unread ? `<span class="pill red">новых ${t.unread}</span>` : ""}</td></tr>`).join("")}</tbody></table></div>`;
 }
@@ -275,37 +286,39 @@ const bubbles = (msgs) => msgs.length ? msgs.map((m) => `<div class="bb ${m.from
 const replyBox = (uid, ph) => `<div class="card" style="margin-top:14px"><textarea class="input" id="rt" maxlength="4000" placeholder="${ph}"></textarea>
   <div style="margin-top:10px;display:flex;gap:10px;align-items:center"><button class="btn" data-act="reply" data-id="${uid}">Отправить от бота</button><span class="muted">придёт человеку в личку от «Пары»</span></div></div>`;
 async function chat(uid) {
-  const [m, card] = await Promise.all([api(`/api/admin/support/${uid}`), api(`/api/admin/users/${uid}`).catch(() => null)]);
+  const [m, card] = await Promise.all([api(`/api/admin/support/${uid}`), api(`/api/admin/users/${uid}`).catch(() => ({ name: `Telegram id ${uid}` }))]);
   S.unread = 0; api("/api/admin/support").then((r) => { S.unread = r.unread; paint(); }).catch(() => {});
   return back("support", "Обращения") + `<h2 class="t">${esc(card?.name || "Без имени")}</h2><div class="sub">${esc(card?.group || "без группы")} · <a href="#user:${uid}" data-sec="user:${uid}">карточка</a></div>
     <div class="card thread">${bubbles(m.messages)}</div>` + replyBox(uid, "Ответ");
 }
-async function sendReply(uid) {
-  const t = $("#rt").value.trim(); if (!t) return toast("Пусто");
-  try { await api(`/api/admin/support/${uid}`, { method: "POST", body: { text: t } }); toast("Отправлено"); open(S.sec); }
-  catch (e) { toast(e.message === "blocked" ? "Человек заблокировал бота" : "Не получилось"); }
+async function sendReply(uid, btn) {
+  const t = $("#rt").value.trim(); if (!t) return toast("Напиши текст сообщения");
+  if (btn) btn.disabled = true;
+  try { await api(`/api/admin/support/${uid}`, { method: "POST", body: { text: t } }); toast("Отправлено"); go(S.sec, false); }
+  catch (e) { if (btn) btn.disabled = false; toast(e.message === "blocked" ? "Человек заблокировал бота — сообщение не дойдёт" : `Не получилось (${e.message})`); }
 }
 async function userCard(uid) {
   const u = await api(`/api/admin/users/${uid}`);
-  const row = (k, v) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`;
+  const row = (k, v) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`;  // k/v уже безопасные: подписи наши, значения — через esc ниже
+  const TAB_LABEL = { "tab:day": "Открывал «День»", "tab:week": "Открывал «Неделю»", "tab:group": "Открывал «Группу»", "tab:find": "Открывал «Поиск»", "tab:me": "Открывал «Я»", "onb:start": "Начал первый запуск", "onb:starosta": "Выбрал «я староста»", "onb:done": "Закончил первый запуск" };
   const on = (v) => (v === true ? "вкл" : v === false ? "выкл" : v || "выкл");
-  return back("users", "Люди") + `<h2 class="t">${esc(u.name || "Без имени")}</h2><div class="sub">id ${u.id} · ${u.role === "starosta" ? "староста" : "студент"}${u.active ? "" : " · заблокировал бота"}${u.onboarded ? "" : " · не прошёл настройку"}</div>
+  return back("users", "Люди") + `<h2 class="t">${esc(u.name || "Без имени")}</h2><div class="sub">Telegram id ${+u.id} · ${u.role === "starosta" ? "староста" : "студент"}${u.active ? "" : " · заблокировал бота"}${u.onboarded ? "" : " · не прошёл настройку"}</div>
     <div class="grid2"><div class="card">${row("Группа", esc(u.group || "—"))}${row("С нами с", human(u.created))}${row("Был", ago(u.last))}${row("Активных дней", u.days_active)}
       ${row("Откуда пришёл", u.source.by ? `по ссылке: ${esc(u.source.by)}` : u.source.group ? `по ссылке группы ${esc(u.source.group)}` : "сам")}${row("Привёл людей", u.invited)}
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">${u.role === "starosta" ? `<button class="btn sm ghost" data-act="role" data-id="${u.id}" data-role="student">Снять старосту</button>` : u.group ? `<button class="btn sm ghost" data-act="role" data-id="${u.id}" data-role="starosta">Сделать старостой</button>` : ""}
         <button class="btn sm ghost" data-act="move" data-id="${u.id}">Перевести в группу</button><button class="btn sm ghost" data-act="reset" data-id="${u.id}">Сбросить настройку</button></div></div>
-      <div class="card"><div class="h3">Уведомления</div>${Object.entries(u.settings).map(([k, v]) => row(k, on(v))).join("")}
-        <div class="h3" style="margin-top:14px">Чем пользуется</div>${Object.entries(u.made).map(([k, v]) => row(k, v)).join("")}${Object.entries(u.tabs).map(([k, v]) => row(esc(k), v)).join("")}</div></div>
+      <div class="card"><div class="h3">Уведомления</div>${Object.entries(u.settings).map(([k, v]) => row(esc(cap(k)), esc(on(v)))).join("")}
+        <div class="h3" style="margin-top:14px">Чем пользуется</div>${Object.entries(u.made).map(([k, v]) => row(esc(cap(k)), +v)).join("")}${Object.entries(u.tabs).map(([k, v]) => row(esc(TAB_LABEL[k] || k), `${+v} ${plural(+v, "раз", "раза", "раз")}`)).join("")}</div></div>
     <div class="h3">Переписка</div><div class="card thread">${bubbles(u.support)}</div>` + replyBox(u.id, "Написать лично");
 }
 async function moveGroup(uid) {
-  const q = prompt("Группа (как в ruz), например ПИ25-1"); if (!q) return;
+  const q = prompt("В какую группу перевести? Например, ПИ25-1"); if (!q) return;
   try {
-    const r = await api(`/api/groups?q=${encodeURIComponent(q)}`), g = r.groups.find((x) => x.label.toLowerCase() === q.toLowerCase()) || r.groups[0];
-    if (!g) return toast("Такой группы нет");
-    if (!confirm(`Перевести в ${g.label}? Скрытые пары сбросятся.`)) return;
-    await api(`/api/admin/users/${uid}/group`, { method: "POST", body: { id: g.id, label: g.label } }); toast(`Теперь в ${g.label}`); open(`user:${uid}`);
-  } catch (e) { toast("Не получилось"); }
+    const r = await api(`/api/admin/groups/search?q=${encodeURIComponent(q)}`), exact = r.groups.find((x) => x.label.toLowerCase() === q.trim().toLowerCase()), g = exact || r.groups[0];
+    if (!g) return toast("Такой группы в расписании нет");
+    if (!confirm(`${exact ? "" : "Точного совпадения нет. Ближайшее: "}${g.label}. Перевести? Скрытые пары у человека сбросятся.`)) return;
+    await api(`/api/admin/users/${uid}/group`, { method: "POST", body: { id: g.id, label: g.label } }); toast(`Теперь в ${g.label}`); go(`user:${uid}`, false);
+  } catch (e) { toast(e.status === 502 ? "Расписание вуза не отвечает, попробуй позже" : `Не получилось (${e.message})`); }
 }
 async function groupCard(gid) {
   const g = await api(`/api/admin/groups/${gid}`), max = Math.max(1, ...g.series.map((d) => d.active));
@@ -314,7 +327,7 @@ async function groupCard(gid) {
       <div class="card"><div class="h3">Содержимое</div><div class="kv"><span>#дз в беседе</span><b>${g.news.homework}</b></div><div class="kv"><span>Объявлений</span><b>${g.news.announcements}</b></div>
         ${g.members.filter((m) => m.role === "starosta").map((m) => `<button class="btn sm" data-sec="chat:${m.id}" style="margin-top:12px">Написать старосте: ${esc(m.name)}</button>`).join("") || `<div class="muted" style="margin-top:12px">Старосты нет</div>`}</div></div>
     <div class="tw"><table><thead><tr><th>Кто</th><th>Роль</th><th>Был</th><th>Настройку прошёл</th></tr></thead><tbody>
-      ${g.members.map((m) => `<tr class="link" data-sec="user:${m.id}"><td><b>${esc(m.name || "без имени")}</b></td><td>${m.role === "starosta" ? `<span class="pill red">староста</span>` : "студент"}</td><td>${ago(m.last)}</td><td>${m.onboarded ? "да" : `<span class="pill">нет</span>`}</td></tr>`).join("")}</tbody></table></div>`;
+      ${g.members.map((m) => `<tr class="link" tabindex="0" data-sec="user:${m.id}"><td><b>${esc(m.name || "без имени")}</b></td><td>${m.role === "starosta" ? `<span class="pill red">староста</span>` : "студент"}</td><td>${ago(m.last)}</td><td>${m.onboarded ? "да" : `<span class="pill">нет</span>`}</td></tr>`).join("")}</tbody></table></div>`;
 }
 async function sources() {
   const r = await api("/api/admin/sources");
@@ -322,7 +335,7 @@ async function sources() {
   return `<h2 class="t">Откуда пришли</h2><div class="sub">Считаем, кто пришёл по ссылке-приглашению. Ссылки помечаются с 24 октября — кто пришёл раньше, записан как «сам»</div>
     <div class="kpis">${[["всего людей", r.total], ["пришли сами", r.direct.came], ["по ссылке человека", r.by_person.reduce((a, x) => a + x.came, 0)], ["по ссылке группы", r.by_group_link.reduce((a, x) => a + x.came, 0)]].map(([l, n], i) => `<div class="kpi ${i ? "" : "red"}"><b>${n}</b><span>${l}</span></div>`).join("")}</div>
     <div class="h3">Кто приводит людей</div>${r.by_person.length ? `<div class="tw"><table><thead><tr><th>Кто позвал</th><th>Группа</th><th class="num">Пришли</th><th class="num">Прошли настройку</th><th class="num">Доходимость</th></tr></thead><tbody>
-      ${r.by_person.map((x) => `<tr class="link" data-sec="user:${x.id}"><td><b>${esc(x.name)}</b> ${x.role === "starosta" ? `<span class="pill red">староста</span>` : ""}</td><td>${esc(x.group || "—")}</td><td class="num"><b>${x.came}</b></td><td class="num">${x.onboarded}</td><td class="num">${pct(x.onboarded, x.came)}</td></tr>`).join("")}</tbody></table></div>` : `<div class="card empty">Пока никто не пришёл по личной ссылке</div>`}
+      ${r.by_person.map((x) => `<tr class="link" tabindex="0" data-sec="user:${x.id}"><td><b>${esc(x.name)}</b> ${x.role === "starosta" ? `<span class="pill red">староста</span>` : ""}</td><td>${esc(x.group || "—")}</td><td class="num"><b>${x.came}</b></td><td class="num">${x.onboarded}</td><td class="num">${pct(x.onboarded, x.came)}</td></tr>`).join("")}</tbody></table></div>` : `<div class="card empty">Пока никто не пришёл по личной ссылке</div>`}
     ${r.by_group_link.length ? `<div class="h3" style="margin-top:16px">По ссылке группы без автора</div><div class="tw"><table><thead><tr><th>Группа</th><th class="num">Пришли</th><th class="num">Прошли настройку</th></tr></thead><tbody>${r.by_group_link.map((x) => `<tr><td>${esc(x.group)}</td><td class="num">${x.came}</td><td class="num">${x.onboarded}</td></tr>`).join("")}</tbody></table></div>` : ""}`;
 }
 const CKINDS = [["hw", "#дз"], ["assess", "Контрольные"], ["ann", "Объявления"], ["poll", "Опросы"]];
@@ -334,8 +347,10 @@ async function content() {
 let cT;
 async function loadContent() {
   const box = $("#cres"); if (!box) return;
+  const seq = ++cSeq;
   try {
     const items = (await api(`/api/admin/content?kind=${S.ckind || "hw"}&q=${encodeURIComponent(S.cq || "")}`)).items;
+    if (seq !== cSeq) return;
     box.innerHTML = !items.length ? `<div class="card empty">Пусто</div>` : `<div class="tw"><table><thead><tr><th>Текст</th><th>Группа</th><th>Автор</th><th>Когда</th><th></th></tr></thead><tbody>
       ${items.map((x) => `<tr><td style="max-width:460px">${esc(x.text)}</td><td>${esc(x.group)}</td><td>${esc(x.author)}</td><td>${dt(x.at)}</td><td class="num"><button class="btn sm ghost" data-act="del" data-kind="${x.kind}" data-id="${x.id}">Удалить</button></td></tr>`).join("")}</tbody></table></div>`;
   } catch (e) { if (e.message !== "401") box.innerHTML = `<div class="card empty">Не получилось загрузить</div>`; }
@@ -348,31 +363,38 @@ async function broadcast() {
       <div><div class="h3">Как увидят в Telegram</div><div class="phone"><div class="msg" id="bprev">Здесь будет превью</div></div></div></div>`;
 }
 async function bcCheck() {
-  S.bt = $("#bt").value.trim(); if (S.bt.length < 3) return toast("Слишком коротко");
-  const r = await api("/api/admin/broadcast", { method: "POST", body: { text: S.bt } });
-  S.bcount = r.count; $("#bprev").innerHTML = r.preview.replace(/\n/g, "<br>");
-  $("#binfo").innerHTML = `<div class="warn">Уйдёт ${r.count} ${plural(r.count, "человеку", "людям", "людям")}. Отменить отправку нельзя.</div>`; $("#bsend").disabled = !r.count;
+  S.bt = $("#bt").value.trim(); if (S.bt.length < 3) return toast("Слишком коротко: хотя бы 3 символа");
+  const b = document.querySelector("[data-act='bc-check']"); b.disabled = true;
+  try {
+    const r = await api("/api/admin/broadcast", { method: "POST", body: { text: S.bt } });
+    S.bcount = r.count; $("#bprev").innerHTML = r.preview.replace(/\n/g, "<br>");
+    $("#binfo").innerHTML = `<div class="warn">Уйдёт ${r.count} ${plural(r.count, "человеку", "людям", "людям")}. Отменить отправку нельзя.</div>`; $("#bsend").disabled = !r.count;
+  } catch (e) { if (e.message !== "401") toast(e.status === 0 ? "Нет связи с ботом на Mac" : `Не получилось (${e.message})`); }
+  b.disabled = false;
 }
 async function bcSend() {
   if ($("#bt").value.trim() !== S.bt) return toast("Текст изменился — нажми «Проверить» ещё раз");
   if (!confirm(`Отправить ${S.bcount} ${plural(S.bcount, "человеку", "людям", "людям")}?`)) return;
   $("#bsend").disabled = true; $("#binfo").innerHTML = `<div class="warn">Отправляю… не закрывай страницу</div>`;
   try { const r = await api("/api/admin/broadcast", { method: "POST", body: { text: S.bt, confirm: S.bcount } });
-    $("#binfo").innerHTML = `<div class="warn" style="background:rgba(64,160,90,.15);color:#2E7D46">Отправлено: ${r.sent}${r.blocked ? `, заблокировали бота: ${r.blocked}` : ""}</div>`; S.bt = ""; }
-  catch (e) { $("#binfo").innerHTML = `<div class="warn">Не получилось отправить</div>`; $("#bsend").disabled = false; }
+    $("#binfo").innerHTML = `<div class="warn" style="background:rgba(64,160,90,.15);color:#2E7D46">Отправлено: ${r.sent}${r.blocked ? `, заблокировали бота: ${r.blocked}` : ""}</div>`; S.bt = ""; $("#bt").value = ""; $("#bprev").textContent = "Здесь будет превью"; }
+  catch (e) { $("#binfo").innerHTML = `<div class="warn">Связь оборвалась посреди отправки — часть людей могла уже получить сообщение. Не отправляй повторно, сначала проверь в Telegram.</div>`; }
 }
 function after(sec) {
   if (sec === "content") { $("#cq").oninput = (e) => { S.cq = e.target.value.trim(); clearTimeout(cT); cT = setTimeout(loadContent, 300); }; loadContent(); }
   if (sec === "users") { $("#uq").oninput = (e) => { S.uq = e.target.value.trim(); clearTimeout(uT); uT = setTimeout(loadUsers, 300); }; loadUsers(); }
-  if (sec === "broadcast") $("#bt").oninput = () => { $("#bsend").disabled = true; };
+  if (sec === "broadcast") $("#bt").oninput = () => { $("#bsend").disabled = true; $("#binfo").innerHTML = ""; $("#bprev").textContent = "Нажми «Проверить», чтобы увидеть превью"; };
+  if (sec === "chat" || sec === "user") { const t = $(".thread"); if (t) t.scrollTop = t.scrollHeight; }
 }
 async function boot() {
   if (!store.get("adm")) return showLogin();
   $("#login").classList.add("hide"); $("#app").classList.remove("hide");
   api("/api/admin/requests").then((r) => { S.pending = r.requests.filter((x) => x.status === "pending").length; paint(); }).catch(() => {});
   api("/api/admin/support").then((r) => { S.unread = r.unread; paint(); }).catch(() => {});
-  open(S.sec);
+  go(S.sec, false);
 }
+addEventListener("popstate", () => { if (!$("#app").classList.contains("hide")) go(location.hash.slice(1) || "overview", false); });
+addEventListener("keydown", (e) => { const r = e.target.closest?.("tr.link[data-sec]"); if (r && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); go(r.dataset.sec); } });
 boot();
 </script>
 </body>

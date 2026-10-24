@@ -341,6 +341,8 @@ body.hero-on .mast { border-radius: 0; background: var(--ha, var(--red)); }
 .sw::after { border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
 .sw.on { background: var(--red); }
 .sw.on::after { background: #fff; }
+:root[data-theme="dark"] .seg button.on { background: #4D3D36; box-shadow: 0 0 0 1px rgba(240,248,250,.12); }
+:root[data-theme="dark"] .sw:not(.on) { background: #4D3D36; box-shadow: inset 0 0 0 1px rgba(240,248,250,.15); }
 .item { border-radius: 22px; background: var(--blk); color: var(--on-blk); }
 .item button { color: var(--on-blk); }
 .chk .box { border-radius: 7px; box-shadow: inset 0 0 0 2px var(--skin-sh); }
@@ -385,13 +387,13 @@ body.hero-on .mast { border-radius: 0; background: var(--ha, var(--red)); }
 .h-count { display: flex; align-items: flex-end; gap: 8px; margin-top: 4px; height: 116px; }
 .h-dig { font: 400 112px/1 var(--num); letter-spacing: -.05em; display: flex; text-shadow: 0 6px 0 rgba(142,21,22,.55); }
 .h-dig span { display: inline-block; }
-.h-dig.t { font-size: 88px; letter-spacing: -.04em; }
+.h-dig.t { font-size: clamp(56px, 23vw, 88px); letter-spacing: -.04em; }
 .h-dig.t + .h-unit { display: none; }
 .h-dig span.flip { animation: flip .45s cubic-bezier(.2,1.4,.4,1); }
 @keyframes flip { 0% { transform: translateY(-55%) rotateX(80deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
 .h-unit { font: 800 22px var(--display); margin-bottom: 18px; color: #FFE5DC; }
 .h-word { font: 400 76px/1 var(--num); letter-spacing: -.04em; text-shadow: 0 6px 0 rgba(142,21,22,.55); }
-.h-sub { font: 600 15px/1.35 var(--text); color: #FFE9E2; max-width: 56%; min-height: 40px; }
+.h-sub { font: 600 15px/1.35 var(--text); color: #FFE9E2; max-width: 56%; min-height: 40px; margin-top: 6px; }
 .h-trackw { position: relative; margin-top: 14px; width: 52%; }
 .h-track { margin-top: 0; height: 8px; border-radius: 4px; background: rgba(255,255,255,.22); overflow: hidden; width: 100%; }
 .h-trackw .wk { position: absolute; bottom: 7px; width: 36px; height: 36px; object-fit: contain; transform: translateX(-60%); opacity: .85; transition: left .8s linear; animation: stride .6s ease-in-out infinite alternate; filter: drop-shadow(0 2px 0 rgba(255,255,255,.35)); }
@@ -430,7 +432,7 @@ body.hero-on .mast { border-radius: 0; background: var(--ha, var(--red)); }
 .ticket .perf { position: absolute; left: 18px; right: 18px; bottom: 50px; border-top: 2px dashed var(--hair); }
 .t-rm { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; margin-top: 24px; min-width: 0; }
 .t-rm b { font: 400 22px var(--num); white-space: nowrap; }
-.t-rm span { font: 700 11.5px var(--text); color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.t-rm span { font: 700 11.5px/1.25 var(--text); color: var(--ink-2); min-width: 0; text-align: right; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ses { background: linear-gradient(160deg, #EC3134, var(--red) 50%, var(--red-dk)); color: #fff; }
 .ses .t-lbl, .ses .t-sub { color: #FFE3DA; }
 .ses .t-big { font-size: 40px; }
@@ -658,7 +660,7 @@ body.hero-on .mast { border-radius: 0; background: var(--ha, var(--red)); }
 .res.tch .tn { display: block; margin-top: 4px; font: 700 12px var(--text); color: var(--red-text); }
 .cgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 .ctile { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 104px; padding: 14px; border-radius: 22px; background: var(--card); box-shadow: var(--shadow); text-align: left; }
-.ctile .e { font-size: 26px; line-height: 1; }
+.ctile .e { font-size: 24px; line-height: 1; width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: var(--paper-2); }
 .ctile b { margin-top: auto; font: 800 15px/1.2 var(--display); }
 .ctile span:last-child { font: 600 12px var(--text); color: var(--ink-2); }
 .chead { display: flex; align-items: center; gap: 10px; margin: 12px 2px 8px; }
@@ -755,8 +757,8 @@ button.bub { display: block; text-align: left; }
 .pn-g button .i { width: 22px; height: 22px; }
 .pn-g b { font: 700 13px/1.2 var(--text); }
 .pn-i { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 8px; padding: 12px 14px; border-radius: 18px; background: #fff; color: var(--ink); text-align: left; }
-.pn-i > span { flex: 1; font: 600 12.5px var(--text); color: var(--ink-2); }
-.pn-i > span b { display: block; font: 800 15px var(--text); color: var(--ink); }
+.pn-i > span { flex: 1; font: 600 12.5px var(--text); color: #735C56; }
+.pn-i > span b { display: block; font: 800 15px var(--text); color: #2C2018; }
 .pn-i .i { color: var(--red-text); flex: none; --icf: #FCCAA7; }
 .mechg { margin-top: 12px; }
 .mgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
@@ -794,7 +796,7 @@ button.bub { display: block; text-align: left; }
 .mesec .opt-h .l { flex: 1; min-width: 0; }
 .mesec .opt-h .l b { display: block; font-weight: 700; }
 .mesec .opt-h .l span { font-size: 12.5px; color: var(--ink-2); }
-.ochips { margin: 0 -20px; padding: 2px 20px 8px; scrollbar-width: none; }
+.ochips { flex-wrap: wrap; overflow: visible; margin: 0; padding: 2px 0 8px; }
 .ochips::-webkit-scrollbar { display: none; }
 .mesec details.more { margin-top: 6px; }
 .mesec details.more > summary { list-style: none; cursor: pointer; padding: 14px 0 4px; font: 700 13px var(--text); color: var(--red-text); }
@@ -872,7 +874,7 @@ button.bub { display: block; text-align: left; }
 .ocard { display: block; width: 100%; text-align: left; background: var(--card); border-radius: 20px; box-shadow: var(--shadow); padding: 14px 16px 6px; margin-top: 10px; }
 .ocard > b { display: block; font-weight: 700; }
 .ocard > span { display: block; font-size: 12.5px; color: var(--ink-2); margin-bottom: 10px; }
-.ocard .ochips { margin: 0 -16px; padding: 2px 16px 10px; }
+.ocard .ochips { margin: 0; padding: 2px 0 10px; }
 .ocard.ostep { padding-bottom: 14px; position: relative; padding-right: 48px; }
 .ocard.ostep > span { margin-bottom: 0; }
 .ocard.ostep::after { content: "›"; position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font: 700 24px var(--text); color: var(--red-text); }
@@ -1382,10 +1384,11 @@ function phaseOf(day) {
   return { k: "done", last: L[L.length - 1] };
 }
 const aud = (x) => audNo(x.l.auditorium) || "—";
+const audL = (v) => (/\d/.test(v) ? `ауд ${v}` : v);  // «ауд 3311», но просто «Зал»
 function mood(p, day) {
   const n = p.next;
   switch (p.k) {
-    case "leave": return p.left > 20 ? { s: vary([8, 4, 34], 1), t: "Утро", q: `Доброе. ${shortDisc(n.l.discipline)} в ${n.l.begin}, выход в ${day.leave.at}.` }
+    case "leave": return p.left > 20 ? { s: vary([8, 4, 34], 1), t: "Утро", q: `Доброе утро. ${shortDisc(n.l.discipline)} в ${n.l.begin}, выход в ${day.leave.at}.` }
       : p.left > 5 ? { s: vary([15, 12, 6, 38], 2), t: "Пора", q: R("Промедление смерти подобно. Обувайся.", "Промедление смерти подобно. Жопу в кроссовки — и на выход.") }
       : { s: vary([3, 21], 3), t: "Срочно", q: R("Выходи. Прямо сейчас.", "Выходи, ёпт. Прямо сейчас.") };
     case "late": return { s: vary([11, 28, 3], 4), t: "Опаздываешь", q: R(`Выход был в ${day.leave.at}. До пары ${p.left} мин — бегом.`, `Ты охренел? Выход был в ${day.leave.at}. До пары ${p.left} мин — беги.`) };
@@ -1396,7 +1399,7 @@ function mood(p, day) {
     case "break": return { s: vary([16, 0, 17], 9), t: "Перемена", q: `Есть такая перемена! ${p.left} мин, потом ${aud(n)}.` };
     case "window": return p.tr ? { s: 37, t: "Окно", q: R(`Окно. Выезжай через ${mins(p.left)}.`, `Окно. Пожри нормально, выезжай через ${mins(p.left)}.`) }
       : { s: vary([27, 14, 24], 10), t: "Окно", q: R(`Окно ${mins(p.left)}. Можно выдохнуть.`, `Окно ${mins(p.left)}. Можно пожрать по-человечески.`) };
-    case "transfer": return { s: 37, t: "Переезд", q: `Едем. ${shortDisc(n.l.discipline)} в ${n.l.begin}, ауд ${aud(n)}.` };
+    case "transfer": return { s: 37, t: "Переезд", q: `Едем. ${shortDisc(n.l.discipline)} в ${n.l.begin}, ${audL(aud(n))}.` };
     case "done": return { s: vary([5, 24, 34, 2], 11), t: "Свобода", q: R("Пары всё. Иди домой, революция подождёт.", "Пары всё. Вали домой, революция подождёт.") };
     default: { const hol = holidayOf(S.today); if (hol) return { s: Array.isArray(hol.st) ? vary(hol.st, 40) : hol.st, t: hol.n, q: hol.say };
       if (slotOf() === "night") return { s: "nightcap", t: "Ночь", q: "Тсс. Вождь спит. Ты тоже иди." }; }
@@ -1408,12 +1411,12 @@ function heroSub(day, p) {
   const n = p.next, nl = n && n.l;
   switch (p.k) {
     case "leave": return `${shortDisc(nl.discipline)} в ${nl.begin} · ${bshort(day.leave.building) || "корпус"} · дорога ${mins(day.leave.travel)}`;
-    case "late": case "before": return `${shortDisc(nl.discipline)} в ${nl.begin} · ауд ${aud(n)}`;
-    case "class": return `${shortDisc(p.cur.l.discipline)} · ауд ${aud(p.cur)}${n ? ` · дальше ${aud(n) === aud(p.cur) ? "там же" : aud(n)}` : ""}`;
-    case "break": case "transfer": return `${shortDisc(nl.discipline)} · ауд ${aud(n)} · в ${nl.begin}`;
-    case "window": return p.tr ? `${bshort(nl.building) || "Другой корпус"} · ${shortDisc(nl.discipline)} в ${nl.begin}` : `Дальше ${shortDisc(nl.discipline)} в ${nl.begin}, ауд ${aud(n)}`;
+    case "late": case "before": return `${shortDisc(nl.discipline)} в ${nl.begin} · ${audL(aud(n))}`;
+    case "class": return `${shortDisc(p.cur.l.discipline)} · ${audL(aud(p.cur))}${n ? ` · дальше ${aud(n) === aud(p.cur) ? "там же" : aud(n)}` : ""}`;
+    case "break": case "transfer": return `${shortDisc(nl.discipline)} · ${audL(aud(n))} · в ${nl.begin}`;
+    case "window": return p.tr ? `${bshort(nl.building) || "Другой корпус"} · ${shortDisc(nl.discipline)} в ${nl.begin}` : `Дальше ${shortDisc(nl.discipline)} в ${nl.begin}, ${audL(aud(n))}`;
     case "done": return `Свободен с ${p.last.l.end}.${nextDayHint(day.date)}`;
-    default: { const x = S.home?.next?.[0]; return x ? `Следующая — ${relDay(x.date)} в ${x.begin}, ауд ${audNo(x.auditorium) || "—"}` : "В ближайшие две недели пар нет"; }
+    default: { const x = S.home?.next?.[0]; return x ? `Следующая — ${relDay(x.date)} в ${x.begin}, ${audL(audNo(x.auditorium) || "—")}` : "В ближайшие две недели пар нет"; }
   }
 }
 const bigOf = (p) => p.left == null ? null : p.left < 100 ? String(p.left) : `${Math.floor(p.left / 60)}:${String(p.left % 60).padStart(2, "0")}`;
@@ -1571,7 +1574,7 @@ function tickHero() {
 async function ensureExams() {
   if (S.exams !== undefined || S.examsLoading) return;
   S.examsLoading = true;
-  try { S.exams = (await api("/api/exams")).exams; } catch (e) { S.exams = null; }
+  try { S.exams = (await Promise.race([api("/api/exams"), new Promise((_, no) => setTimeout(() => no(new Error("slow")), 8000))])).exams; } catch (e) { S.exams = null; }
   S.examsLoading = false;
   const t = $("#t-ses"); if (!t) return;
   if (S.exams?.length) t.outerHTML = sessionTile();
@@ -1665,7 +1668,7 @@ function renderCabinet() {
   const reach = c ? `${c.members}${c.roster_total ? `/${c.roster_total}` : ""}` : `${f.members}`;
   let html = `<section class="hero"><div class="h-date">Кабинет старосты · ${esc(g)}</div><div class="h-lbl">в «Паре»</div>
     <div class="h-count"><span class="h-dig t"><span>${[...reach].join("</span><span>")}</span></span></div>
-    <div class="h-sub">${c && c.roster_total ? (c.not_joined.length ? `ещё ${c.not_joined.length} ${plural(c.not_joined.length, "человек", "человека", "человек")} не подключились` : "вся группа на месте 💪") : "загрузи список группы — посчитаю, кого не хватает"}</div>
+    <div class="h-sub">${c && c.roster_total ? (c.roster_total > c.members ? `ещё ${c.roster_total - c.members} ${plural(c.roster_total - c.members, "человек", "человека", "человек")} не подключились` : "вся группа на месте 💪") : "загрузи список группы — посчитаю, кого не хватает"}</div>
     <div class="ily"><span class="body"><img src="${STK(vary([21, 7, 22, 6], 22))}" alt=""></span></div></section>
     <button class="bub" data-act="cab-reach"><small>Ильич · нажми</small>${!c ? "Считаю твою группу…" : !c.roster_total ? "Загрузи список группы — покажу, кого не хватает." : c.not_joined.length * 2 >= c.roster_total ? "Половина группы ещё не с нами. Кидай ссылку в беседу." : c.not_joined.length ? `Ещё ${c.not_joined.length} не с нами — посмотри кто.` : c.last_announcement && c.last_announcement.unread.length ? `Объявление не прочитали ${c.last_announcement.unread.length}. Пнуть?` : "Порядок в группе. Староста может выпить чаю."}</button>` + gSeg();
   if (!c) { el.innerHTML = html + `<div class="skel" style="height:160px;margin-top:14px"></div><div class="skel"></div>`; return ensureCabinet(); }
@@ -1696,7 +1699,7 @@ function renderCabinet() {
 function cabSheet(kind) {
   const c = S.cab; if (!c) return;
   if (kind === "reach") return openSheet(`<h4>Кто ещё не в «Паре»</h4><div class="muted tiny">${c.roster_total ? `По списку группы: подключились ${c.members} из ${c.roster_total}` : "Загрузи список группы — увижу, кого не хватает"}</div>
-    <div style="margin-top:10px">${c.not_joined.map((n) => `<div class="set"><div class="l"><b>${esc(n)}</b><span>не подключился</span></div></div>`).join("") || (c.roster_total ? `<div class="note">Все из списка уже тут 💪</div>` : "")}</div>
+    <div style="margin-top:10px">${c.not_joined.map((n) => `<div class="set"><div class="l"><b>${esc(n)}</b><span>ещё не в «Паре» или не отметил себя в списке</span></div></div>`).join("") || (c.roster_total ? `<div class="note">Все из списка уже тут 💪</div>` : "")}</div>
     ${c.unlisted.length ? `<div class="muted tiny" style="margin-top:12px">В «Паре», но не нашли себя в списке: ${c.unlisted.map(esc).join(", ")}</div>` : ""}
     <button class="btn block" data-act="invite-post" style="margin-top:14px">Позвать в беседе</button>
     ${c.roster_total ? "" : `<button class="btn ghost block" data-act="roster" style="margin-top:8px">Загрузить список группы</button>`}`);
@@ -2192,7 +2195,8 @@ function wkPanel(d) {
   const n = d.slots.length;
   const head = `<div class="wk-h"><div><b>${d.date === S.today ? "Сегодня" : cap(WD_FULL[pd(d.date).getDay()])}</b><span>${human(d.date)}${n ? ` · ${n} ${plural(n, "пара", "пары", "пар")} · ${d.slots[0].lessons[0].begin}–${d.slots[n - 1].lessons[0].end}` : ""}</span></div>
     ${n ? `<button class="btn sm ghost" data-open="${d.date}">В «Дне»</button>` : ""}</div>`;
-  return head + (n ? leaveHtml(d) + `<div style="height:14px"></div>` + pathHtml(d) : emptyDayHtml(d)) + remsHtml(d);
+  const lv = n && d.date === S.today && d.leave && Date.parse(d.leave.iso) <= now() ? "" : n ? leaveHtml(d) + `<div style="height:14px"></div>` : "";  // сегодня уже вышел — строка «выход был» лишняя
+  return head + (n ? lv + pathHtml(d) : emptyDayHtml(d)) + remsHtml(d);
 }
 function weekCards(days) {
   return days.map((d) => {
@@ -2342,7 +2346,7 @@ function campusHtml() {
   const c = S.campus;
   if (!c) return `<div class="skel" style="margin-top:8px"></div><div class="skel"></div>`;
   return `<div class="fhint"><img src="${STK(31)}" alt=""><span>Куда за справкой, где деканат, столовая, медпункт — по открытым данным fa.ru</span></div>
-    <label class="sfield">${icon("search")}<input class="input" id="cq" placeholder="Например: военкомат, столовая, пропуск" value="${esc(S.campusQ || "")}" autocomplete="off"></label>
+    <label class="sfield">${icon("search")}<input class="input" id="cq" placeholder="Военкомат, столовая, справка" value="${esc(S.campusQ || "")}" autocomplete="off"></label>
     <div id="cbody">${campusBody()}</div>
     <div class="foot">Данные с fa.ru на ${esc(c.updated)}. Часы работы лучше перепроверить перед походом.</div>`;
 }
@@ -2596,7 +2600,7 @@ function statsHtml() {
     <div class="st-h">Активные люди по дням</div>
     <div class="stbars" style="--max:${max}"><em>${max}</em>${bars}</div><div class="muted tiny" id="sttip">Нажми на столбик — покажу детали</div>
     <div class="st-h">Воронка</div>
-    ${s.funnel.map((f) => `<div class="fun"><div class="fun-l"><span>${esc(f.label)}</span><b>${f.n}${f.of != null ? ` из ${f.of}` : ""}</b></div>
+    ${s.funnel.filter((f) => f.of !== 0).map((f) => `<div class="fun"><div class="fun-l"><span>${esc(f.label)}</span><b>${f.n}${f.of != null ? ` из ${f.of}` : ""}</b></div>
       <div class="fun-t"><i style="width:${Math.max(f.n ? 2 : 0, f.n / (f.of || top) * 100)}%"></i></div></div>`).join("")}
     <div class="st-h">Функции <small>7 дней · всего</small></div>
     <div class="st-tbl">${s.features.map((f) => `<div class="${f.total ? "" : "z"}"><span>${esc(f.label)}</span><b>${f.week}</b><em>${f.total}</em></div>`).join("")}</div>
@@ -2945,7 +2949,7 @@ document.addEventListener("click", async (e) => {
     } catch (er) { fail(er); }
     return;
   }
-  if (act === "export") { haptic(); try { const r = await api("/api/journal/export", { method: "POST", body: {} }); toast(`Отправил Excel в чат с ботом (${r.pairs} пар)`); } catch (er) { toast(er.status === 404 ? "За этот месяц журнал пуст" : "Не получилось выгрузить"); } return; }
+  if (act === "export") { haptic(); try { const r = await api("/api/journal/export", { method: "POST", body: {} }); toast(`Отправил Excel в чат с ботом (${r.pairs} ${plural(r.pairs, "пара", "пары", "пар")})`); } catch (er) { toast(er.status === 404 ? "За этот месяц журнал пуст" : "Не получилось выгрузить"); } return; }
   if (act === "claim") { haptic(); try { await api("/api/roster/claim", { method: "POST", body: { id: +a.dataset.id } }); okHaptic(); closeSheet(); S.abs = undefined; openMe(); } catch (er) { toast(er.status === 409 ? "Этого человека уже кто-то выбрал" : "Не получилось"); } return; }
   if (act === "claim-list") { haptic(); try { const r = await api("/api/roster"); openSheet(`<h4>Кто ты в списке группы?</h4>${r.roster.map((x) => `<button class="jrow" data-act="claim" data-id="${x.id}" ${x.claimed && !x.me ? "disabled" : ""}><span>${esc(x.name)}</span><b>${x.me ? "это я" : x.claimed ? "занято" : ""}</b></button>`).join("") || `<div class="note">Староста ещё не добавил список.</div>`}`); } catch (er) { fail(er); } return; }
   if (act === "cal") {
