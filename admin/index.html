@@ -268,8 +268,8 @@ async function loadUsers() {
 async function groups() {
   const g = (await api("/api/admin/groups")).groups;
   return `<h2 class="t">Группы</h2><div class="sub">${g.length} ${plural(g.length, "группа", "группы", "групп")} с людьми в «Паре»</div>` + (!g.length ? `<div class="card empty">Пока никого</div>` : `<div class="tw"><table>
-    <thead><tr><th>Группа</th><th class="num">Людей</th><th class="num">Прошли настройку</th><th class="num">Активны 7 дн.</th><th class="num">В списке группы</th><th>Старосты</th><th>Беседа</th></tr></thead><tbody>
-    ${g.map((x) => `<tr class="link" tabindex="0" data-sec="group:${x.id}"><td><b>${esc(x.label)}</b></td><td class="num">${x.users}</td><td class="num">${x.onboarded}</td><td class="num"><b>${x.active7}</b></td><td class="num">${x.roster || "—"}</td>
+    <thead><tr><th>Группа</th><th class="num">Людей</th><th class="num">Прошли настройку</th><th class="num">Активны 7 дн.</th><th class="num">Вернулись сами</th><th class="num">Охват списка</th><th>Старосты</th><th>Беседа</th></tr></thead><tbody>
+    ${g.map((x) => `<tr class="link" tabindex="0" data-sec="group:${x.id}"><td><b>${esc(x.label)}</b></td><td class="num">${x.users}</td><td class="num">${x.onboarded}</td><td class="num"><b>${x.active7}</b></td><td class="num">${x.returned ?? 0}</td><td class="num">${x.roster ? `${x.users} из ${x.roster} · ${Math.round(100 * x.users / x.roster)}%` : "—"}</td>
       <td>${x.starostas.length ? x.starostas.map(esc).join(", ") : `<span class="muted">нет</span>`}</td><td>${x.chats.length ? esc(x.chats.join(", ")) : `<span class="muted">нет</span>`}</td></tr>`).join("")}</tbody></table></div>`);
 }
 const dt = (iso) => { const d = new Date(new Date(iso).getTime() + 3 * 3600e3); return `${d.getUTCDate()} ${MON[d.getUTCMonth()]}, ${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`; };  // Москва, а не часы браузера
