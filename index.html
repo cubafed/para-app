@@ -803,6 +803,9 @@ button.bub { display: block; text-align: left; }
 .mesec details.more[open] > summary::after { content: " ⌄"; }
 .mesec .set { border-bottom: 1px solid var(--hair); }
 .mesec .note { margin-top: 12px; }
+.supm { margin-top: 8px; padding: 10px 12px; border-radius: 14px 14px 14px 6px; background: var(--paper-2); font: 500 14px/1.4 var(--text); white-space: pre-wrap; word-break: break-word; }
+.supm.dev { background: rgba(218,34,39,.1); border-radius: 14px 14px 6px 14px; }
+.supm small { display: block; font: 700 11px var(--text); color: var(--ink-2); margin-bottom: 3px; }
 .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 14px; }
 .kpi { background: var(--card); border-radius: 14px; padding: 10px 8px; text-align: center; }
 .kpi b { display: block; font: 400 22px/1 var(--num); color: var(--ink); }
@@ -2513,6 +2516,7 @@ function renderMe() {
       <div class="set"><div class="l"><b>Звуки</b><span>тихие щелчки и звоночек — выключены по умолчанию</span></div>${sw("snd", sndOn())}</div>
       <div class="set"><div class="l"><b>Живой закреп</b><span>сверху в чате с ботом: что сейчас и что дальше</span></div>${sw("pin_on", m.pin_on)}</div>
       ${tg?.addToHomeScreen ? `<div class="set"><div class="l"><b>Иконка на экране «Домой»</b><span>открывать «Пару» как приложение</span></div><button class="btn sm ghost" data-act="home-screen">Добавить</button></div>` : ""}</div>
+    <div class="gcard mecard">${meRow("support", "Написать разработчику", "баг, идея, вопрос — ответ придёт в бот", "mega")}</div>
     ${m.admin ? `<div class="gcard mecard">${meRow("stats", "Статистика", "видишь только ты", "chart")}</div>` : ""}
     <div class="foot">«Пара» — независимый студенческий проект. Не официальный сервис Финуниверситета.</div>`;
   if (S.meSec && $("#sheet").classList.contains("on")) meSec(S.meSec);
@@ -2550,11 +2554,16 @@ function meSec(sec) {
       ${opt("Расписание в календарь телефона", "подписка, обновляется сама · вся группа, без учёта скрытых пар", "", `<div class="calbtns">${["google", "apple", "yandex"].map((k) => `<button class="btn sm ghost" data-act="cal" data-k="${k}">${{ google: "Google", apple: "Apple", yandex: "Яндекс" }[k]}</button>`).join("")}</div>`)}
       ${opt(m.location ? "Погода по твоей локации" : "Погода по центру Москвы", "для утреннего прогноза", m.location ? `<button class="btn sm ghost" data-act="loc-reset">Сбросить</button>` : `<button class="btn sm ghost" data-act="loc">${icon("pin")}Моя локация</button>`)}`,
     stats: () => statsHtml(),
+    support: () => `<h4>Написать разработчику</h4><div class="muted tiny">Что сломалось, чего не хватает, что бесит. Читает живой человек, ответ придёт в чат с ботом.</div>
+      <textarea class="input" id="sup" rows="5" maxlength="4000" placeholder="Например: неделя долго грузится по утрам" style="margin-top:12px;height:auto;min-height:120px;padding:12px 14px;resize:vertical">${esc(S.supDraft || "")}</textarea>
+      <button class="btn block" data-act="sup-send" style="margin-top:10px">Отправить</button>
+      ${S.sup?.length ? `<div class="h2" style="margin-top:20px">Переписка</div>${S.sup.map((x) => `<div class="supm ${x.from_admin ? "dev" : ""}"><small>${x.from_admin ? "Разработчик" : "Ты"} · ${human(x.at.slice(0, 10))}</small>${esc(x.text)}</div>`).join("")}` : ""}`,
   }[sec];
   if (!html) return;
   openSheet(`<div class="mesec">${html()}</div>`, sec);
   $("#sheet").scrollTop = keep;
   if (sec === "stats" && S.stats === undefined) loadStats();
+  if (sec === "support" && S.sup === undefined) { S.sup = null; api("/api/support").then((r) => { S.sup = r.messages; if (S.meSec === "support") meSec("support"); }).catch(() => {}); }
 }
 /* ---------- СТАТИСТИКА (только админ) ---------- */
 async function loadStats() {
@@ -2965,6 +2974,13 @@ document.addEventListener("click", async (e) => {
   if (act === "fback") return goBack();
   if (act === "chgroup") return groupSheet();
   if (act === "mesec") { haptic(); return meSec(a.dataset.sec); }
+  if (act === "sup-send") {
+    const t = $("#sup").value.trim(); if (t.length < 3) return toast("Напиши чуть подробнее");
+    a.disabled = true;
+    try { const r = await api("/api/support", { method: "POST", body: { text: t } }); S.supDraft = ""; S.sup = [...(S.sup || []), r.message]; okHaptic(); toast("Отправил. Ответ придёт в бот"); meSec("support"); }
+    catch (er) { a.disabled = false; fail(er); }
+    return;
+  }
   if (act === "stbar") { hsel(); document.querySelectorAll(".stbar.on").forEach((x) => x.classList.remove("on")); a.classList.add("on"); $("#sttip").textContent = a.dataset.tip; return; }
   if (act === "stats-reload") { haptic(); S.stats = undefined; return meSec("stats"); }
   if (act === "unhide") { try { await api(`/api/hidden/${a.dataset.id}`, { method: "DELETE" }); toast("Вернул"); invalidate(); S.hidden = (await api("/api/hidden")).rules; await ensureChecklist(); renderMe(); } catch (er) { fail(er); } return; }
@@ -3013,6 +3029,7 @@ document.addEventListener("change", (e) => {
   if (tm && tm.value) { S.me[tm.dataset.time] = tm.value; queueSave({ [tm.dataset.time]: tm.value }); }
 });
 document.addEventListener("input", (e) => {
+  if (e.target.id === "sup") S.supDraft = e.target.value;
   if (e.target.id === "fq") { S.find.q = e.target.value.trim(); if (S.find.type === "person" && $("#fres")) $("#fres").innerHTML = findResults(); runSearch(); }
   if (e.target.id === "cq") { S.campusQ = e.target.value.trim(); const r = $("#cbody"); if (r) r.innerHTML = campusBody(); }
   if (e.target.id === "gq") searchGroups(e.target.value.trim(), $("#gres"), async (id, label) => {
