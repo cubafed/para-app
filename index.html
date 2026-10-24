@@ -884,23 +884,21 @@ button.bub { display: block; text-align: left; }
 .ocard.ostep.done::after { content: "✓"; }
 .onb .cta { background: var(--paper); }
 .boot { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 24px; text-align: center; color: #fff;
-  background: radial-gradient(120% 80% at 50% 0%, #EC3134 0%, #DA2227 45%, #A8181C 100%); transition: opacity .4s ease, transform .4s ease; }
-.boot.off { opacity: 0; transform: scale(1.04); pointer-events: none; }
+  background: radial-gradient(120% 80% at 50% 0%, #EC3134 0%, #DA2227 45%, #A8181C 100%); transition: opacity .3s var(--e-out); }
+.boot.off { opacity: 0; pointer-events: none; }
 .boot img { width: 168px; height: 168px; object-fit: contain; filter: drop-shadow(0 16px 20px rgba(44,32,24,.35)); animation: bootbob .9s cubic-bezier(.4,0,.6,1) infinite alternate; transform-origin: 50% 90%; }
 .boot .bw { font: 800 40px/1 "Geologica", "Golos", system-ui, sans-serif; letter-spacing: -.03em; display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; }
 .boot .bw::after { content: ""; width: 11px; height: 11px; border-radius: 50%; background: #FCCAA7; transform: translateY(-11px); }
 .boot p { margin: 6px 0 0; min-height: 22px; font: 600 15px/1.4 "Golos", system-ui, sans-serif; color: #FFE1D6; }
 .boot p.in { animation: bootline .4s cubic-bezier(.22,1,.36,1) both; }
-@keyframes bootline { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes bootline { from { opacity: 0; transform: translateY(8px); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
 .boot .shd { width: 92px; height: 12px; margin-top: -4px; border-radius: 50%; background: rgba(60,8,10,.32); filter: blur(3px); animation: bootshd .9s cubic-bezier(.4,0,.6,1) infinite alternate; }
 @keyframes bootshd { to { transform: scale(.72); opacity: .55; } }
 /* честная полоска: заполняется по шагам загрузки (связь → профиль → расписание), блик бежит поверх */
 .boot .bar { position: relative; width: 168px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.22); overflow: hidden; margin-top: 14px; }
-.boot .bar i { display: block; width: 100%; height: 100%; border-radius: 3px; background: #fff; transform-origin: 0 50%; transform: scaleX(var(--bp, .08)); transition: transform .7s var(--e-out); }
-.boot .bar::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.75), transparent); width: 40%; animation: bootbar 1.2s cubic-bezier(.6,0,.4,1) infinite; mix-blend-mode: overlay; }
+.boot .bar i { display: block; width: 100%; height: 100%; border-radius: 3px; background: #fff; transform-origin: 0 50%; transform: scaleX(var(--bp, .08)); transition: transform .45s var(--e-out); }
 @keyframes bootbob { from { transform: translateY(0) rotate(-3deg) scale(1, 1); } to { transform: translateY(-16px) rotate(3deg) scale(.98, 1.03); } }
-@keyframes bootbar { from { transform: translateX(-110%); } to { transform: translateX(260%); } }
-@media (prefers-reduced-motion: reduce) { .boot img, .boot .shd, .boot .bar::after, .boot p.in { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .boot img, .boot .shd, .boot p.in { animation: none; } .boot .bar i { transition: none; } }
 
 /* ================= движение: плавно, как iOS ================= */
 :root { --e-out: cubic-bezier(.22,1,.36,1); --e-soft: cubic-bezier(.32,.72,0,1); --e-spring: cubic-bezier(.34,1.3,.64,1); }
@@ -908,8 +906,8 @@ button, .tile, .pl, .remc, .annc, .placec, .newsc { -webkit-user-select: none; u
 button:not(:disabled), .tile { transition: transform .18s var(--e-out), box-shadow .18s var(--e-out), background-color .2s var(--e-out); }
 button:not(:disabled):active, .tile:active { transform: scale(.97); }
 .tab:active { transform: scale(.92); }
-.view.on { animation: viewIn .34s var(--e-out) both; }
-@keyframes viewIn { from { opacity: 0; transform: translate3d(calc(var(--dir, 0) * 28px), 6px, 0); } }
+.view.on { animation: viewIn .26s var(--e-out) both; }
+@keyframes viewIn { from { opacity: 0; transform: translate3d(calc(var(--dir, 0) * 20px), 0, 0); } }
 /* переход между вкладками (View Transitions, где есть): старый экран уезжает, новый въезжает со стороны вкладки; шапка и панель на месте */
 main { view-transition-name: main; }
 .mast { view-transition-name: mast; }
@@ -918,24 +916,20 @@ main { view-transition-name: main; }
 ::view-transition-old(root), ::view-transition-new(root), ::view-transition-old(tabbar) { animation: none; }
 ::view-transition-old(tabbar) { display: none; }
 ::view-transition-new(tabbar) { animation: none; }
-::view-transition-group(main) { animation-duration: .38s; }
-::view-transition-old(main) { animation: vtOut .22s cubic-bezier(.4,0,1,1) both; }
-::view-transition-new(main) { animation: vtIn .38s var(--e-out) both; }
-@keyframes vtOut { to { opacity: 0; transform: translateX(calc(var(--dir, 0) * -36px)) scale(.985); } }
-@keyframes vtIn { from { opacity: 0; transform: translateX(calc(var(--dir, 0) * 48px)); } }
+::view-transition-group(main) { animation-duration: .26s; }
+::view-transition-old(main) { animation: vtOut .14s cubic-bezier(.4,0,1,1) both; }
+::view-transition-new(main) { animation: vtIn .26s var(--e-out) both; }
+@keyframes vtOut { to { opacity: 0; transform: translateX(calc(var(--dir, 0) * -10px)); } }
+@keyframes vtIn { from { opacity: 0; transform: translateX(calc(var(--dir, 0) * 20px)); } }
 html.vt .view.on { animation: none; }
 /* красная «капля» под активной вкладкой перетекает к нажатой */
 .tabbar nav { position: relative; }
 .tpill { position: absolute; left: 0; top: 0; height: 52px; width: 0; border-radius: 24px; background: var(--red); pointer-events: none; opacity: 0;
-  transition: transform .5s cubic-bezier(.3,1.35,.5,1), width .5s cubic-bezier(.3,1.35,.5,1), opacity .2s; }
+  transition: transform .28s var(--e-soft), opacity .2s var(--e-out); }
 .tpill.on { opacity: 1; }
-.tpill.go { animation: tpillgo .5s var(--e-out); }
-@keyframes tpillgo { 40% { scale: 1.06 .9; } }
 .tabbar.pill .tab.on { background: transparent; }
 .tabbar .tab { z-index: 1; }
 .tabbar .tab:not(:disabled) { transition: color .3s var(--e-out), transform .18s var(--e-out), background-color .2s var(--e-out); }
-.tab.on svg.i { animation: tabpop .45s cubic-bezier(.34,1.6,.64,1); }
-@keyframes tabpop { 0% { transform: scale(.7) translateY(3px); } }
 .anim .tile { animation: none; opacity: 1; transform: none; }
 .h-dig span.flip { animation: none; }
 .h-dig { perspective: 400px; }
@@ -947,7 +941,7 @@ html.vt .view.on { animation: none; }
 .sheet { transition: transform .46s var(--e-soft); will-change: transform; }
 .sheet.drag { transition: none; }
 .scrim { transition: opacity .36s var(--e-out); }
-.toast { transition: opacity .3s var(--e-out), transform .46s var(--e-spring); }
+.toast { transition: opacity .25s var(--e-out), transform .4s var(--e-soft); }
 .chk .box svg path { stroke-dasharray: 26; stroke-dashoffset: 26; transition: stroke-dashoffset .32s var(--e-out) .05s; }
 .chk.done .box svg path, .on .box svg path { stroke-dashoffset: 0; }
 .chk .box { transition: background-color .25s var(--e-out), transform .35s var(--e-spring); }
@@ -970,7 +964,7 @@ html.vt .view.on { animation: none; }
 .fest span { font: 600 15px/1.4 var(--text); color: #FFE1D6; margin-top: 8px; max-width: 30ch; }
 .fest small { font: 600 12px var(--text); color: rgba(255,255,255,.6); margin-top: 22px; }
 @media (prefers-reduced-motion: reduce) {
-  .view.on, .hero.urgent .h-dig, .skel, .tile.skel-t, .tab.on svg.i, .tpill.go { animation: none; }
+  .view.on, .hero.urgent .h-dig, .skel, .tile.skel-t { animation: none; }
   .tpill { transition: none; }
   .sheet, .toast, .minibar, button, .tile { transition-duration: .01ms !important; }
 }
@@ -1054,16 +1048,15 @@ function bootDone() {
   b.dataset.out = "1"; clearInterval(bootT); bootStep(1);
   const plain = () => { b.classList.add("off"); setTimeout(() => b.remove(), 450); };
   if (REDUCE || !b.animate) return plain();
-  setTimeout(() => {
+  b.style.pointerEvents = "none";
+  setTimeout(() => {  // даём полоске добежать
     const top = document.body.classList.contains("hero-on") && $("#hero") ? $("#hero").getBoundingClientRect().bottom : $(".mast").getBoundingClientRect().bottom;
     const cut = Math.max(0, innerHeight - Math.max(60, Math.min(top, innerHeight * .6)));
-    $("#bootimg")?.animate([{ transform: "none" }, { transform: "translateY(-46px) scale(1.06)", offset: .35 }, { transform: "translateY(-120px) scale(.4)", opacity: 0 }], { duration: 520, easing: "cubic-bezier(.3,0,.6,1)", fill: "forwards" });
-    b.querySelectorAll(".bw, p, .bar, .shd").forEach((x, i) => x.animate([{ opacity: 1 }, { opacity: 0, transform: "translateY(-14px)" }], { duration: 220, delay: i * 30, fill: "forwards" }));
-    const a = b.animate([{ clipPath: "inset(0 0 0 0 round 0)" }, { clipPath: `inset(0 0 ${cut}px 0 round 0 0 28px 28px)`, opacity: 1, offset: .7 }, { clipPath: `inset(0 0 ${cut}px 0 round 0 0 28px 28px)`, opacity: 0 }],
-      { duration: 640, delay: 120, easing: EASE.soft, fill: "forwards" });
-    b.style.pointerEvents = "none";
+    b.querySelectorAll("img, .shd, .bw, p, .bar").forEach((x) => x.animate([{ opacity: 1 }, { opacity: 0, transform: "translateY(-12px)", filter: "blur(4px)" }], { duration: 180, easing: "cubic-bezier(.4,0,1,1)", fill: "forwards" }));
+    const a = b.animate([{ clipPath: "inset(0 0 0 0 round 0)" }, { clipPath: `inset(0 0 ${cut}px 0 round 0 0 28px 28px)`, opacity: 1, offset: .75 }, { clipPath: `inset(0 0 ${cut}px 0 round 0 0 28px 28px)`, opacity: 0 }],
+      { duration: 420, delay: 60, easing: EASE.soft, fill: "forwards" });
     a.onfinish = () => b.remove();
-  }, 160);
+  }, 120);
 }
 setTimeout(bootDone, 15000);
 const tg = window.Telegram && window.Telegram.WebApp;
@@ -2873,7 +2866,6 @@ function movePill(jump = false) {
   p.style.transform = `translate(${b.offsetLeft}px, ${b.offsetTop}px)`;
   p.classList.add("on"); $(".tabbar").classList.add("pill");
   if (jump) { p.offsetWidth; p.style.transition = ""; }
-  else { p.classList.remove("go"); p.offsetWidth; p.classList.add("go"); }
 }
 addEventListener("resize", () => movePill(true));
 function setTab(t) {
