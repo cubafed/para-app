@@ -976,7 +976,7 @@ button:not(:disabled):active, .tile:active { transform: scale(.97); }
   <symbol id="w-storm" viewBox="0 0 24 24"><path d="M6 14h12a4 4 0 0 0 0-8 6 6 0 0 0-11.5 2A3 3 0 0 0 6 14z"/><path d="m13 14-3 4h4l-3 4"/></symbol>
 </svg>
 
-<div class="boot" id="boot" aria-live="polite"><img src="static/stickers/15.webp" alt=""><span class="bw">Пара</span><p id="bootq">Тяну расписание с ruz.fa.ru…</p><span class="bar"><i></i></span></div>
+<div class="boot" id="boot" aria-live="polite"><img id="bootimg" src="static/stickers/15.webp" alt=""><span class="bw">Пара</span><p id="bootq">Тяну расписание с ruz.fa.ru…</p><span class="bar"><i></i></span></div>
 <div class="minibar" id="minibar" aria-hidden="true"></div>
 <header class="mast"><span class="word">Пара</span><span class="rule" aria-hidden="true"></span><span class="grp hide" id="hdrGroup"></span></header>
 
@@ -1006,6 +1006,7 @@ button:not(:disabled):active, .tile:active { transform: scale(.97); }
 /* ---------- экран загрузки ---------- */
 const BOOT_LINES = ["Тяну расписание с ruz.fa.ru…", "Пересчитываю аудитории…", "Проверяю, не отменили ли пару…", "Ставлю чайник на перемену…", "Учиться, учиться и ещё раз загружаться…", "Верной дорогой идём…"];
 let bootI = 0;
+{ const pool = [15, 9, 24, 12, 31, 8, 36, 2, 6, 38], b = document.getElementById("bootimg"); if (b) b.src = `static/stickers/${String(pool[Math.floor(Math.random() * pool.length)]).padStart(2, "0")}.webp`; }
 const bootT = setInterval(() => { const q = document.getElementById("bootq"); if (!q) return;
   const n = q.cloneNode(false); n.textContent = BOOT_LINES[++bootI % BOOT_LINES.length]; n.className = "in"; q.replaceWith(n); }, 1800);
 function bootDone() { const b = document.getElementById("boot"); if (!b || b.classList.contains("off")) return; clearInterval(bootT); b.classList.add("off"); setTimeout(() => b.remove(), 450); }
@@ -1354,6 +1355,9 @@ function renderDay(fromPhase = false) {
 
 /* ---------- ИЛЬИЧ И ШАПКА ДНЯ ---------- */
 const STK = (n) => `static/stickers/${String(n).padStart(2, "0")}.webp`;
+/* одна поза из набора: стабильна в течение дня, завтра — другая; salt разводит разные места экрана */
+const dayKey = () => { const d = new Date(now() + 3 * 3600e3); return d.getUTCFullYear() * 400 + d.getUTCMonth() * 32 + d.getUTCDate(); };
+const vary = (arr, salt = 0) => arr[Math.abs(Math.floor(Math.sin(dayKey() * 12.9898 + salt * 78.233) * 43758.5453)) % arr.length];
 const rawOn = () => { try { return localStorage.getItem("raw") !== "0"; } catch (e) { return true; } };
 const R = (clean, dirty) => (rawOn() && dirty ? dirty : clean);
 const shortDisc = (d) => d.length > 24 ? d.split(/[\s(]/)[0] : d;
@@ -1381,22 +1385,22 @@ const aud = (x) => audNo(x.l.auditorium) || "—";
 function mood(p, day) {
   const n = p.next;
   switch (p.k) {
-    case "leave": return p.left > 20 ? { s: 4, t: "Утро", q: `Доброе. ${shortDisc(n.l.discipline)} в ${n.l.begin}, выход в ${day.leave.at}.` }
-      : p.left > 5 ? { s: 15, t: "Пора", q: R("Промедление смерти подобно. Обувайся.", "Промедление смерти подобно. Жопу в кроссовки — и на выход.") }
-      : { s: 3, t: "Срочно", q: R("Выходи. Прямо сейчас.", "Выходи, ёпт. Прямо сейчас.") };
-    case "late": return { s: 3, t: "Опаздываешь", q: R(`Выход был в ${day.leave.at}. До пары ${p.left} мин — бегом.`, `Ты охренел? Выход был в ${day.leave.at}. До пары ${p.left} мин — беги.`) };
-    case "before": return { s: 4, t: "Скоро", q: `Первая — ${shortDisc(n.l.discipline)} в ${n.l.begin}.` };
-    case "class": return p.left > 30 ? { s: 10, t: "На паре", q: "Учиться, учиться и ещё раз учиться. Ну или делать вид." }
-      : p.left > 10 ? { s: 26, t: "Терпим", q: R(`Ещё ${p.left} мин. Держимся.`, `Ещё ${p.left} мин. Держись, блин, почти всё.`) }
-      : { s: 15, t: "Дальше", q: n ? `Верной дорогой идёте — в ${aud(n)}${n.s.transfer || p.cur.s.transfer ? ", это другой корпус" : ""}.` : "Это последняя. Потом свобода." };
-    case "break": return { s: 16, t: "Перемена", q: `Есть такая перемена! ${p.left} мин, потом ${aud(n)}.` };
+    case "leave": return p.left > 20 ? { s: vary([8, 4, 34], 1), t: "Утро", q: `Доброе. ${shortDisc(n.l.discipline)} в ${n.l.begin}, выход в ${day.leave.at}.` }
+      : p.left > 5 ? { s: vary([15, 12, 6, 38], 2), t: "Пора", q: R("Промедление смерти подобно. Обувайся.", "Промедление смерти подобно. Жопу в кроссовки — и на выход.") }
+      : { s: vary([3, 21], 3), t: "Срочно", q: R("Выходи. Прямо сейчас.", "Выходи, ёпт. Прямо сейчас.") };
+    case "late": return { s: vary([11, 28, 3], 4), t: "Опаздываешь", q: R(`Выход был в ${day.leave.at}. До пары ${p.left} мин — бегом.`, `Ты охренел? Выход был в ${day.leave.at}. До пары ${p.left} мин — беги.`) };
+    case "before": return { s: vary([19, 4, 39], 5), t: "Скоро", q: `Первая — ${shortDisc(n.l.discipline)} в ${n.l.begin}.` };
+    case "class": return p.left > 30 ? { s: vary([10, 39, 30, 25], 6), t: "На паре", q: "Учиться, учиться и ещё раз учиться. Ну или делать вид." }
+      : p.left > 10 ? { s: vary([26, 9, 28], 7), t: "Терпим", q: R(`Ещё ${p.left} мин. Держимся.`, `Ещё ${p.left} мин. Держись, блин, почти всё.`) }
+      : { s: vary([38, 12, 15], 8), t: "Дальше", q: n ? `Верной дорогой идёте — в ${aud(n)}${n.s.transfer || p.cur.s.transfer ? ", это другой корпус" : ""}.` : "Это последняя. Потом свобода." };
+    case "break": return { s: vary([16, 0, 17], 9), t: "Перемена", q: `Есть такая перемена! ${p.left} мин, потом ${aud(n)}.` };
     case "window": return p.tr ? { s: 37, t: "Окно", q: R(`Окно. Выезжай через ${mins(p.left)}.`, `Окно. Пожри нормально, выезжай через ${mins(p.left)}.`) }
-      : { s: 16, t: "Окно", q: R(`Окно ${mins(p.left)}. Можно выдохнуть.`, `Окно ${mins(p.left)}. Можно пожрать по-человечески.`) };
+      : { s: vary([27, 14, 24], 10), t: "Окно", q: R(`Окно ${mins(p.left)}. Можно выдохнуть.`, `Окно ${mins(p.left)}. Можно пожрать по-человечески.`) };
     case "transfer": return { s: 37, t: "Переезд", q: `Едем. ${shortDisc(n.l.discipline)} в ${n.l.begin}, ауд ${aud(n)}.` };
-    case "done": return { s: 5, t: "Свобода", q: R("Пары всё. Иди домой, революция подождёт.", "Пары всё. Вали домой, революция подождёт.") };
-    default: { const hol = holidayOf(S.today); if (hol) return { s: hol.st, t: hol.n, q: hol.say };
+    case "done": return { s: vary([5, 24, 34, 2], 11), t: "Свобода", q: R("Пары всё. Иди домой, революция подождёт.", "Пары всё. Вали домой, революция подождёт.") };
+    default: { const hol = holidayOf(S.today); if (hol) return { s: Array.isArray(hol.st) ? vary(hol.st, 40) : hol.st, t: hol.n, q: hol.say };
       if (slotOf() === "night") return { s: "nightcap", t: "Ночь", q: "Тсс. Вождь спит. Ты тоже иди." }; }
-      return { s: 32, t: "Выходной", q: R("Пар нет. Будильник я выключил, спи.", "Пар нет. Будильник я выключил, спи как убитый.") };
+      return { s: vary([32, 37, 24], 12), t: "Выходной", q: R("Пар нет. Будильник я выключил, спи.", "Пар нет. Будильник я выключил, спи как убитый.") };
   }
 }
 const HLBL = { window: "до начала пары", leave: "до выхода", late: "до начала пары", before: "до начала пары", class: "до конца пары", break: "до начала пары", transfer: "до начала пары", done: "пары закончились", free: "сегодня пар нет" };
@@ -1432,14 +1436,14 @@ const slotOf = () => { const h = nowMinMsk() / 60; return h < 5 || h >= 22 ? "ni
 const HOLIDAYS = [
   { n: "С Новым годом", rs: [["12-31", "12-31"], ["01-01", "01-08"]], pal: "ny", fx: "snow", st: "santa", say: "С Новым годом! Оливье не трогай — это на троих." },
   { n: "Татьянин день", rs: [["01-25", "01-25"]], pal: "tat", fx: "confetti", st: "grad", say: "С Днём студента! Сессия подождёт. Ну, почти." },
-  { n: "23 февраля", rs: [["02-23", "02-23"]], pal: "feb", fx: "confetti", st: "army", say: "С Днём защитника Отечества! Вольно." },
-  { n: "8 Марта", rs: [["03-08", "03-08"]], pal: "mar", fx: "petals", st: "flowers", say: "С 8 Марта! Цветы — это обязательно." },
+  { n: "23 февраля", rs: [["02-23", "02-23"]], pal: "feb", fx: "confetti", st: ["army", 22, 2], say: "С Днём защитника Отечества! Вольно." },
+  { n: "8 Марта", rs: [["03-08", "03-08"]], pal: "mar", fx: "petals", st: ["flowers", 1, 29, 35], say: "С 8 Марта! Цветы — это обязательно." },
   { n: "День рождения Ильича", rs: [["04-22", "04-22"]], pal: "bday", fx: "confetti", st: "cake", say: "Сегодня мой день. Торт мне, пары — вам." },
-  { n: "Праздник весны и труда", rs: [["05-01", "05-01"]], pal: "may", fx: "petals", st: 5, say: "Первомай! Труд — это хорошо, но выходной лучше." },
-  { n: "День Победы", rs: [["05-09", "05-09"]], pal: "vic", fx: "fireworks", st: 26, say: "С Днём Победы. Помним." },
-  { n: "День России", rs: [["06-12", "06-12"]], pal: "s-day", fx: "confetti", st: 5, say: "С Днём России! Погода — на твоё усмотрение." },
-  { n: "День знаний", rs: [["09-01", "09-01"]], pal: "s-day", fx: "balloons", st: "grad", say: "С 1 сентября! Учиться, учиться и ещё раз учиться." },
-  { n: "День народного единства", rs: [["11-04", "11-04"]], pal: "aut", fx: "leaves", st: 26, say: "С Днём единства! Группа едина — особенно в чате." },
+  { n: "Праздник весны и труда", rs: [["05-01", "05-01"]], pal: "may", fx: "petals", st: [38, 6, 2], say: "Первомай! Труд — это хорошо, но выходной лучше." },
+  { n: "День Победы", rs: [["05-09", "05-09"]], pal: "vic", fx: "fireworks", st: [2, 38], say: "С Днём Победы. Помним." },
+  { n: "День России", rs: [["06-12", "06-12"]], pal: "s-day", fx: "confetti", st: [2, 38, 5], say: "С Днём России! Погода — на твоё усмотрение." },
+  { n: "День знаний", rs: [["09-01", "09-01"]], pal: "s-day", fx: "balloons", st: ["grad", 6], say: "С 1 сентября! Учиться, учиться и ещё раз учиться." },
+  { n: "День народного единства", rs: [["11-04", "11-04"]], pal: "aut", fx: "leaves", st: [22, 7], say: "С Днём единства! Группа едина — особенно в чате." },
 ];
 const holidayOf = (date) => { const md = date.slice(5); return HOLIDAYS.find((h) => h.rs.some(([a, b]) => md >= a && md <= b)) || null; };
 const stkSrc = (n) => (typeof n === "string" ? `static/stickers/gen/${n}.webp` : STK(n));
@@ -1511,6 +1515,12 @@ function setIly(s, q, t) {
 }
 const TAPS = [[0, "Ха! Щекотно."], [12, "Я тебе не кнопка лифта."], [20, "Ну и чего ты тыкаешь?"], [31, "Идея: открывай меня перед выходом — и не опоздаешь."],
   [39, "Думаю. Не мешай."], [17, "Это Мурзик. Он тоже за посещаемость."], [9, "Тяну учёбу, как бревно на субботнике."],
+  [24, "Сыграть тебе что-нибудь? Только не «Сессию»."], [30, "Тсс. Препод смотрит."], [34, "Всё под контролем. Почти."],
+  [7, "Мы с Марксом и Энгельсом посовещались: иди на пару."], [23, "Высматриваю, кто прогуливает."], [36, "Шляпу долой перед отличниками!"],
+  [29, "Это тебе. За то, что открываешь «Пару»."], [26, "Ну-ну."],
+  [1, "Люблю тех, кто приходит на первую пару."], [2, "Так держать, товарищ!"], [6, "We can! Сдадим сессию."], [25, "Я святой: ни одного прогула."],
+  [22, "Совещание руководства: ты молодец."], [38, "Вперёд, к знаниям!"], [33, "Взяток не беру. Ну… смотря какой предмет."],
+  [18, "Гони монету! Шучу: «Пара» бесплатная."], [13, "Сессия близко. Я во всеоружии."], [35, "Меня тут поцеловали. Не ревнуй."],
   [21, ["Ещё раз ткнёшь — запишу в прогульщики.", "Ещё раз ткнёшь — запишу в прогульщики, падла."]]];
 let tapI = 0, tapUntil = 0;
 function ilyTap() {
@@ -1571,7 +1581,7 @@ function sessionTile() {
   if (S.exams === undefined) return `<div class="tile skel-t" id="t-ses"><span class="t-lbl">До сессии</span><span class="t-big">…</span></div>`;
   if (!S.exams || !S.exams.length) return "";
   const e = S.exams[0];
-  return `<button class="tile ses" id="t-ses" data-act="exams"><span class="t-lbl">До сессии</span>
+  return `<button class="tile ses" id="t-ses" data-act="exams"><img class="peek" src="${STK(vary([6, 31], 41))}" alt=""><span class="t-lbl">До сессии</span>
     <span class="t-big">${e.days ? `${e.days}<small>${plural(e.days, "день", "дня", "дней")}</small>` : "Сегодня"}</span>
     <span class="t-sub">${e.tag === "exam" ? "Экзамен" : "Зачёт"} · ${esc(shortDisc(e.discipline))}, ${human(e.date)}</span>
     <span class="t-btn">${(() => { const n = (S.study || []).reduce((a, x) => a + x.items.length, 0); return n ? `Учить сегодня · ${n}` : `Все · ${S.exams.length}`; })()}</span></button>`;
@@ -1656,7 +1666,7 @@ function renderCabinet() {
   let html = `<section class="hero"><div class="h-date">Кабинет старосты · ${esc(g)}</div><div class="h-lbl">в «Паре»</div>
     <div class="h-count"><span class="h-dig t"><span>${[...reach].join("</span><span>")}</span></span></div>
     <div class="h-sub">${c && c.roster_total ? (c.not_joined.length ? `ещё ${c.not_joined.length} ${plural(c.not_joined.length, "человек", "человека", "человек")} не подключились` : "вся группа на месте 💪") : "загрузи список группы — посчитаю, кого не хватает"}</div>
-    <div class="ily"><span class="body"><img src="${STK(21)}" alt=""></span></div></section>
+    <div class="ily"><span class="body"><img src="${STK(vary([21, 7, 22, 6], 22))}" alt=""></span></div></section>
     <button class="bub" data-act="cab-reach"><small>Ильич · нажми</small>${!c ? "Считаю твою группу…" : !c.roster_total ? "Загрузи список группы — покажу, кого не хватает." : c.not_joined.length * 2 >= c.roster_total ? "Половина группы ещё не с нами. Кидай ссылку в беседу." : c.not_joined.length ? `Ещё ${c.not_joined.length} не с нами — посмотри кто.` : c.last_announcement && c.last_announcement.unread.length ? `Объявление не прочитали ${c.last_announcement.unread.length}. Пнуть?` : "Порядок в группе. Староста может выпить чаю."}</button>` + gSeg();
   if (!c) { el.innerHTML = html + `<div class="skel" style="height:160px;margin-top:14px"></div><div class="skel"></div>`; return ensureCabinet(); }
   const la = c.last_announcement, col = c.collections_open[0], pl = c.history.polls.find((x) => !x.closed);
@@ -1706,7 +1716,7 @@ function renderGroup() {
   let html = `<section class="hero"><div class="h-date">Твоя группа</div><div class="h-lbl">в «Паре»</div>
     <div class="h-count" style="height:auto;margin:8px 0 6px"><span class="h-word" style="font-size:${g.length <= 5 ? 76 : g.length === 6 ? 62 : g.length === 7 ? 52 : g.length <= 9 ? 44 : 36}px">${esc(g)}</span></div>
     <div class="h-sub">${f.members ?? 0} ${plural(f.members ?? 0, "человек", "человека", "человек")}${f.roster_total ? ` из\u00a0${f.roster_total}` : ""}</div>
-    <div class="ily"><span class="body"><img src="${STK(f.chats.length ? 10 : 4)}" alt=""></span></div></section>
+    <div class="ily"><span class="body"><img src="${STK(f.chats.length ? vary([7, 22, 10, 34], 20) : vary([4, 19, 2], 21))}" alt=""></span></div></section>
     <div class="bub"><small>Ильич</small>${chats}</div>` + (f.starosta ? gSeg() : "");
   if (f.announcements.length) html += `<h2 class="h2">Объявления<small>от старосты</small></h2>` + f.announcements.map(annHtml).join("");
   if (f.polls.length) html += `<h2 class="h2">Опросы<small>от старосты</small></h2>` + f.polls.map(pollHtml).join("");
@@ -1718,7 +1728,7 @@ function renderGroup() {
       <li>Добавь бота в беседу группы — кнопка ниже.</li><li>Сделай его админом (права можно не давать) — иначе он не видит #дз.</li>
       <li>Он сам спросит, какая это группа.</li></ol><button class="btn block" data-act="addbot">Добавить в беседу</button></div>`;
   html += `<h2 class="h2">Домашка<small>сообщения с #дз за 2 недели</small></h2>`;
-  if (!f.homework.length) html += `<div class="empty" style="padding-top:4px"><img class="stk" src="${STK(26)}" alt="" style="width:150px"><div class="big" style="font-size:28px">Пока пусто</div>
+  if (!f.homework.length) html += `<div class="empty" style="padding-top:4px"><img class="stk" src="${STK(vary([26, 30, 19], 23))}" alt="" style="width:150px"><div class="big" style="font-size:28px">Пока пусто</div>
     <p>Кто-то пишет в беседе «#дз эссе к среде» — и оно появляется здесь у всей группы.</p></div>`;
   let last = "";
   for (const h of f.homework) {
@@ -1836,7 +1846,7 @@ function studySheet(id) {
     <div class="h-track sbar"><i style="width:${pct(st.known / st.total)}"></i></div>
     ${q ? `<div class="qcard"><small>Вопрос ${q.n} · ${done + 1} из ${st.items.length} на сегодня${q.status === "dont" ? " · повтор" : ""}</small><p>${esc(q.text)}</p></div>
       <div class="qbtns"><button class="btn ghost" data-act="qmark" data-q="${q.id}" data-s="dont" data-set="${id}">Не знаю</button><button class="btn" data-act="qmark" data-q="${q.id}" data-s="know" data-set="${id}">Знаю</button></div>`
-      : `<div class="empty" style="padding-top:6px"><img class="stk" src="${STK(12)}" alt="" style="width:150px"><div class="big" style="font-size:26px">На сегодня всё</div><p>Завтра Ильич пришлёт следующую порцию. «Не знаю» вернутся на повтор.</p></div>`}`);
+      : `<div class="empty" style="padding-top:6px"><img class="stk" src="${STK(vary([34, 12, 29], 31))}" alt="" style="width:150px"><div class="big" style="font-size:26px">На сегодня всё</div><p>Завтра Ильич пришлёт следующую порцию. «Не знаю» вернутся на повтор.</p></div>`}`);
 }
 function uploadSheet(disc, date) {
   S.up = { disc, date };
@@ -1954,7 +1964,7 @@ function pathHtml(day) {
       const n = slots[i + 1].lessons[0], on = Date.parse(l.ends) <= now() && now() < Date.parse(n.starts) ? "now" : "";
       if (s.transfer) rows += `<div class="plg ${on}"><img src="${STK(37)}" alt=""><span><b>переезд ~${mins(s.transfer)}</b> · ${esc(bshort(n.building) || "другой корпус")}${s.transfer > s.gap ? " · выходи сразу" : ""}</span></div>`;
       else if (s.gap >= 30) rows += `<div class="plg ${on}"><span><b>окно ${mins(s.gap)}</b></span></div>`;
-      else rows += `<div class="plg ${on}"><img src="${STK(16)}" alt=""><span><b>перемена ${s.gap} мин</b></span></div>`;
+      else rows += `<div class="plg ${on}"><img src="${STK([16, 0, 17, 34][i % 4])}" alt=""><span><b>перемена ${s.gap} мин</b></span></div>`;
     }
   });
   return `<div class="plist" id="plist">${rows}${ovRows(Infinity)}<div class="pl-end"><span>Свободен в <b>${slots[slots.length - 1].lessons[0].end}</b></span></div></div>`;
@@ -2051,7 +2061,7 @@ document.addEventListener("pointerup", (e) => {
   const from = il.style.transform; il.style.transform = "";
   anim(il, [{ transform: from }, { transform: "translate(0,0) rotate(-4deg) scale(.97)", offset: .55 }, { transform: "rotate(2deg)", offset: .8 }, { transform: "none" }], { duration: 620, easing: EASE.out, fill: "none" });
   haptic("light");
-  if (Math.hypot(e.clientX - x, e.clientY - y) > 110) { setIly(20, DRAG_LINES[Math.floor(Math.random() * DRAG_LINES.length)], "Ильич"); tapUntil = Date.now() + 4000; setTimeout(tickHero, 4100); }
+  if (Math.hypot(e.clientX - x, e.clientY - y) > 110) { setIly([20, 21, 3][Math.floor(Math.random() * 3)], DRAG_LINES[Math.floor(Math.random() * DRAG_LINES.length)], "Ильич"); tapUntil = Date.now() + 4000; setTimeout(tickHero, 4100); }
 });
 
 /* награды */
@@ -2091,7 +2101,7 @@ function celebrateCancels(day) {
   if (day.date !== S.today) return;
   for (const o of (day.overrides || []).filter((x) => x.status === "cancelled")) {
     let seen = false; try { seen = localStorage.getItem("ov:" + o.id); localStorage.setItem("ov:" + o.id, "1"); } catch (e) {}
-    if (!seen && !S.feed?.starosta) { setTimeout(() => celebrate(24, "Пару отменили!", `${o.discipline}, ${o.begin}${o.note ? " · " + o.note : ""}`), 900); break; }
+    if (!seen && !S.feed?.starosta) { setTimeout(() => celebrate(vary([24, 5, 0, 2], 32), "Пару отменили!", `${o.discipline}, ${o.begin}${o.note ? " · " + o.note : ""}`), 900); break; }
   }
 }
 
@@ -2167,7 +2177,7 @@ function weekSay(days) {
   const top = busy.reduce((a, d) => (d.slots.length > a.slots.length ? d : a));
   const free = days.filter((d) => !d.slots.length && pd(d.date).getDay() !== 0 && pd(d.date).getDay() !== 6);
   const txt = `${n} ${plural(n, "пара", "пары", "пар")} за неделю. ${busy.length > 1 && top.slots.length > 2 ? `Тяжелее всего — ${WD_FULL[pd(top.date).getDay()]}, ${top.slots.length} ${plural(top.slots.length, "пара", "пары", "пар")}.` : ""}${free.length ? ` ${cap(WD_FULL[pd(free[0].date).getDay()])} ${["свободно", "свободен", "свободен", "свободна", "свободен", "свободна", "свободна"][pd(free[0].date).getDay()]}.` : ""}`;
-  return `<div class="fhint"><img src="${STK(n > 22 ? 26 : free.length ? 5 : 16)}" alt=""><span>${esc(txt.trim())}</span></div>`;
+  return `<div class="fhint"><img src="${STK(n > 22 ? vary([9, 28, 26], 25) : free.length ? vary([5, 24], 26) : vary([16, 39], 27))}" alt=""><span>${esc(txt.trim())}</span></div>`;
 }
 /* контрольная или самостоятельная в этот день: по виду работы из ruz или по пометке #кр из беседы */
 const isCtl = (l) => l.tag === "control" || (l.assess || []).length > 0;
@@ -2188,7 +2198,7 @@ function weekCards(days) {
   return days.map((d) => {
     const dt = pd(d.date), n = d.slots.length, cls = d.date === S.today ? "today" : d.date < S.today ? "past" : "";
     const dateBox = `<div class="wd-date"><span>${WD[dt.getDay()]}</span><b>${dt.getDate()}</b><i>${MON_GEN[dt.getMonth()].slice(0, 3)}</i></div>`;
-    if (!n) return `<button class="wday off" id="wd-${d.date}" data-wopen="${d.date}">${dateBox}<div class="wd-body"><div class="wd-free"><img src="${STK(32)}" alt="">Пар нет</div></div></button>`;
+    if (!n) return `<button class="wday off" id="wd-${d.date}" data-wopen="${d.date}">${dateBox}<div class="wd-body"><div class="wd-free"><img src="${STK([32, 24, 30, 37][dt.getDay() % 4])}" alt="">Пар нет</div></div></button>`;
     return `<button class="wday ${cls}" id="wd-${d.date}" data-wopen="${d.date}">${dateBox}<div class="wd-body"><div class="wd-h"><b>${d.date === S.today ? "Сегодня" : cap(WD_FULL[dt.getDay()])}</b>
       <em>${n} ${plural(n, "пара", "пары", "пар")} · ${d.slots[0].lessons[0].begin}–${d.slots[n - 1].lessons[0].end}</em></div>
       ${d.slots.map((s) => { const l = s.lessons[0], par = s.lessons.length > 1, hot = s.lessons.some(isCtl) || s.lessons.some((x) => HOT.has(x.tag));
@@ -2282,7 +2292,7 @@ function renderFind() {
   if (f.type === "free") { el.innerHTML = `<div class="seg seg4">${seg}</div>${freeHtml()}`; if (!S.free && !S.freeLoading) loadFree(); return; }
   if (f.type === "campus") { el.innerHTML = `<div class="seg seg4">${seg}</div>${campusHtml()}`; if (!S.campus) api("/api/campus").then((r) => { S.campus = r; if (S.tab === "find" && S.find.type === "campus") renderFind(); }).catch(fail); return; }
   el.innerHTML = `<div class="seg seg4">${seg}</div>
-    <div class="fhint"><img src="${STK(f.type === "person" ? 39 : 31)}" alt=""><span>${f.type === "person" ? "Где сейчас препод и когда он свободен" : "Когда аудитория занята, а когда можно засесть"}</span></div>
+    <div class="fhint"><img src="${STK(f.type === "person" ? vary([23, 39], 28) : vary([31, 14], 29))}" alt=""><span>${f.type === "person" ? "Где сейчас препод и когда он свободен" : "Когда аудитория занята, а когда можно засесть"}</span></div>
     <label class="sfield">${icon("search")}<input class="input" id="fq" placeholder="${f.type === "person" ? "Фамилия, например Журавлева" : "Номер, например 1515"}" value="${esc(f.q)}" autocomplete="off" enterkeyhint="search"></label>
     <div id="fres" style="margin-top:8px">${findResults()}</div>`;
   if (f.type === "person") ensureTeachers();
@@ -2301,7 +2311,7 @@ function freeHtml() {
   if (!v || S.freeLoading && !v.rooms) return `<div class="skel" style="height:60px;margin-top:6px"></div><div class="skel"></div>`;
   if (v.error) return `<div class="note">Сервис свободных аудиторий сейчас не отвечает. Попробуй позже.</div>`;
   const nowB = v.date === S.today ? v.begin : null;
-  return `<div class="fhint"><img src="${STK(16)}" alt=""><span>Где засесть в окно: аудитории, где на этой паре никого нет</span></div>
+  return `<div class="fhint"><img src="${STK(vary([27, 16], 30))}" alt=""><span>Где засесть в окно: аудитории, где на этой паре никого нет</span></div>
     <div class="chips">${v.buildings.map((b) => `<button class="${v.building?.id === b.id ? "on" : ""}" data-fb="${esc(b.id)}">${esc(b.abbr)}</button>`).join("")}</div>
     <div class="chips pairs">${v.pairs.map((p, i) => `<button class="${v.begin === p.begin ? "on" : ""}" data-fp="${p.begin}"><b>${i + 1}</b>${p.begin}</button>`).join("")}</div>
     ${v.building ? `<div class="muted tiny" style="margin:4px 2px 8px">${esc(v.building.name)}</div>` : ""}
@@ -2349,7 +2359,7 @@ function freeTile() {
   const v = S.free;
   if (!v || v.error) return `<div class="tile full skel-t" id="t-free"><span class="t-lbl">Где засесть</span></div>`;
   const top = v.rooms.slice(0, 6);
-  return `<button class="tile full freet" id="t-free" data-goto-free="1"><img class="peek" src="${STK(16)}" alt=""><span class="t-lbl">Где засесть · ${esc(v.building?.abbr || "")} · пара с ${v.begin}</span>
+  return `<button class="tile full freet" id="t-free" data-goto-free="1"><img class="peek" src="${STK(27)}" alt=""><span class="t-lbl">Где засесть · ${esc(v.building?.abbr || "")} · пара с ${v.begin}</span>
     ${top.length ? `<span class="rooms mini">${top.map((r) => `<span class="room"><b>${esc(r.name.split(" ")[0])}</b><span>до ${r.until}</span></span>`).join("")}</span>` : `<span class="t-sub">Свободных аудиторий нет</span>`}
     <span class="t-btn">Все ${v.rooms.length}</span></button>`;
 }
@@ -2497,7 +2507,7 @@ function renderMe() {
   el.innerHTML = `
     ${trip ? `<section class="hero"><div class="h-date">${esc(m.name || "Студент")} · ${esc(m.group?.label || "группа не выбрана")}</div>
       <div class="h-lbl">${trip.label}</div><div class="h-count">${trip.word ? `<span class="h-word">${trip.word}</span>` : `<span class="h-dig t"><span>${[...trip.big].join("</span><span>")}</span></span>`}</div>
-      <div class="h-sub">${esc(trip.sub)}</div><div class="ily"><span class="body"><img src="${STK(12)}" alt=""></span></div></section>
+      <div class="h-sub">${esc(trip.sub)}</div><div class="ily"><span class="body"><img src="${STK(vary([12, 34, 5, 8], 24))}" alt=""></span></div></section>
       <div class="bub"><small>Ильич</small>${esc(trip.say)}</div>`
       : `<section class="hero"><div class="h-date">${esc(m.name || "Студент")} · ${esc(m.group?.label || "")}</div><div class="h-lbl">считаю расписание</div><div class="h-count"><span class="h-word">…</span></div><div class="h-sub">секунду</div></section>`}
     <button class="btn sm ghost mechg" data-act="chgroup">Сменить группу${m.group ? ` · ${esc(m.group.label)}` : ""}</button>
@@ -2640,7 +2650,7 @@ function requestLocation() {
 const O = { step: 1, role: "student", group: null, travel: {}, buffer: 10, lead: 60, evening: "21:00", pre_end: 15 };
 const INTRO = [
   { s: 4, t: "Привет, я Ильич", q: "Буду вести твой день: когда выходить из дома, сколько до конца пары и куда идти дальше." },
-  { s: 10, t: "Вся группа тут", q: "Домашка из беседы по #дз, объявления старосты, контрольные — рядом с нужной парой." },
+  { s: 7, t: "Вся группа тут", q: "Домашка из беседы по #дз, объявления старосты, контрольные — рядом с нужной парой." },
   { s: 31, t: "Сессия без паники", q: "Считаю дни до зачётов, режу вопросы на порции и напоминаю учить. Не официально — по-студенчески." },
 ];
 const onbSteps = () => (O.role === "starosta" ? 4 : 3);
@@ -2671,7 +2681,7 @@ function onbIntro(i = 0) {
 function onbRole() {
   bootDone();
   $("#onb").innerHTML = `<div class="intro"><div class="in-top"><span class="word">Пара</span></div>
-    <div class="in-card"><img src="${STK(20)}" alt=""><h1>Кто ты?</h1><p>От этого зависит, что я покажу первым.</p></div>
+    <div class="in-card"><img src="${STK(36)}" alt=""><h1>Кто ты?</h1><p>От этого зависит, что я покажу первым.</p></div>
     <div class="in-cta roles">
       <button class="role" data-orole="student"><b>Я студент</b><span>расписание, напоминания, ДЗ группы</span></button>
       <button class="role" data-orole="starosta"><b>Я староста</b><span>плюс объявления, журнал, сборы и опросы для группы</span></button></div></div>`;
@@ -2708,7 +2718,7 @@ function onbTravel() {
   onbFrame("Дорога", `Сколько едешь от дома до ${bs.length > 1 ? "каждого корпуса" : "вуза"}. По этому посчитаю, когда выходить.`,
     bs.map((b) => `<div class="ocard"><b>${esc(bshort(b.name))}</b><span>${esc(b.name)}</span>${ochips("t:" + b.oid, O.travel[b.oid], MIN_OPTS)}</div>`).join("")
     + `<div class="ocard"><b>Запас</b><span>на лифты и задержки</span>${ochips("buffer", O.buffer, [0, 5, 10, 15, 20])}</div>`,
-    `<button class="btn ghost" id="oback">Назад</button><button class="btn block" id="onext">Дальше</button>`, 37);
+    `<button class="btn ghost" id="oback">Назад</button><button class="btn block" id="onext">Дальше</button>`, 19);
   $("#onb .body").onclick = onbChips;
   $("#oback").onclick = onbGroup; $("#onext").onclick = onbTime;
 }
@@ -2718,7 +2728,7 @@ function onbTime() {
     <div class="ocard"><b>Утром — когда выходить</b><span>с погодой и парами</span>${ochips("lead", O.lead, [30, 45, 60, 90, "off"], (v) => `за ${v} мин`)}</div>
     <div class="ocard"><b>Перед концом пары — куда дальше</b><span>аудитория и корпус следующей</span>${ochips("pre_end", O.pre_end, [10, 15, "off"], (v) => `за ${v} мин`)}</div>
     <div class="ocard"><b>Вечером — план на завтра</b><span>пары, выход и форма на физру</span>${ochips("evening", O.evening, ["20:00", "21:00", "22:00", "off"], (v) => v)}</div>`,
-    `<button class="btn ghost" id="oback">Назад</button><button class="btn block" id="onext">Дальше</button>`, 16);
+    `<button class="btn ghost" id="oback">Назад</button><button class="btn block" id="onext">Дальше</button>`, 8);
   $("#onb .body").onclick = onbChips;
   $("#oback").onclick = onbTravel;
   $("#onext").onclick = async () => {
@@ -2897,7 +2907,7 @@ document.addEventListener("click", async (e) => {
     await anim($(".qcard"), [{ transform: "none", opacity: 1 }, { transform: `translateX(${know ? 120 : -120}%) rotate(${know ? 12 : -12}deg)`, opacity: 0 }], { duration: 300, easing: "ease-in" })?.finished;
     studySheet(st.id);
     anim($(".qcard") || $(".sheet .empty"), [{ transform: "scale(.92) translateY(12px)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 380, easing: EASE.spring });
-    if (know && st.known === st.total) { closeSheet(); celebrate(24, "Всё выучено!", `${st.discipline}: ${st.total} из ${st.total}. Теперь только повторять.`); }
+    if (know && st.known === st.total) { closeSheet(); celebrate(vary([2, 25, 34, 29], 33), "Всё выучено!", `${st.discipline}: ${st.total} из ${st.total}. Теперь только повторять.`); }
     else if (know) hnote("success");
     api("/api/study/mark", { method: "POST", body: { qid: q.id, status: a.dataset.s } }).catch(fail);
     return;
