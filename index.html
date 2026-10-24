@@ -732,6 +732,20 @@ body[data-pal="aut"] { --ha: #DE9142; --hb: #8E4A1E; }
 @keyframes burst { 0% { transform: scale(.1); opacity: 1; } 60% { opacity: .9; } 100% { transform: scale(2.4); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .hbg .fx, .hbg .cloud, .hbg .star, .hbg .city .w, .h-trackw .wk { animation: none; } }
 .mecard { margin-top: 14px; }
+.gseg { margin: 14px 0 0; }
+button.bub { display: block; text-align: left; }
+.cgrid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.ctile2 { display: flex; flex-direction: column; align-items: flex-start; min-height: 112px; padding: 14px; border-radius: 22px; background: var(--card); box-shadow: var(--shadow); text-align: left; }
+.ctile2 .k { font: 800 11px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+.ctile2 b { margin-top: 8px; font: 400 34px/1 var(--num); }
+.ctile2 .s { margin-top: auto; padding-top: 6px; font: 600 12.5px/1.3 var(--text); color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ctile2.hot { background: linear-gradient(160deg, #EC3134, var(--red) 55%, var(--red-dk)); color: #fff; }
+.ctile2.hot .k, .ctile2.hot .s { color: #FFE1D6; }
+.hseg { margin: 0 0 8px; }
+.hist { margin-top: 8px; padding: 12px 14px; border-radius: 18px; background: var(--card); box-shadow: var(--shadow); }
+.hi-t { font: 600 14px/1.35 var(--text); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.hi-m { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 8px; font: 600 12px var(--text); color: var(--ink-2); }
+.hi-m .btn { margin-left: auto; }
 .panel { margin-top: 14px; padding: 14px; border-radius: 26px; background: linear-gradient(160deg, #EC3134, var(--red) 55%, var(--red-dk)); color: #fff; box-shadow: var(--shadow); }
 .pn-h { display: flex; justify-content: space-between; align-items: baseline; margin: 2px 4px 12px; }
 .pn-h b { font: 800 17px var(--display); }
@@ -1103,7 +1117,7 @@ async function apiNet(path, { method = "GET", body } = {}) {
   return j;
 }
 /* сохранённые ответы: открываемся сразу из памяти телефона, свежее подтягиваем фоном; если Mac или туннель лежат — живём на сохранённом */
-const SWR = /^\/api\/(bootstrap|days|home|feed|checklist|study|exams|teachers|progress|news|campus|absences|hidden)(\?|$)/;
+const SWR = /^\/api\/(bootstrap|days|home|feed|checklist|study|exams|teachers|progress|news|campus|absences|hidden|starosta\/cabinet)(\?|$)/;
 const ckey = (path) => `c:${tg?.initDataUnsafe?.user?.id || DEV_USER || 0}:${path}`;
 function cget(path) { try { const v = JSON.parse(localStorage.getItem(ckey(path))); return v && Date.now() - v.t < 7 * 864e5 ? v.d : null; } catch (e) { return null; } }
 function cclear() { try { Object.keys(localStorage).filter((k) => k.startsWith("c:")).forEach((k) => localStorage.removeItem(k)); } catch (e) {} }
@@ -1151,7 +1165,7 @@ async function ensureWeek(ws) {
 async function ensureChecklist() { if (!S.checklist) S.checklist = (await api("/api/checklist")).disciplines; }
 function invalidate() { S.days = {}; S.home = null; S.checklist = null; S.teachers = undefined; S.prog = undefined; }
 /* расписание поменялось (выбрали подгруппу, скрыли пару, староста отменил…): сбросить и перечитать то, что сейчас на экране */
-function refreshSchedule() { invalidate(); if (S.tab === "week") openWeek(S.weekStart); else if (S.tab === "day") openDay(S.date); }
+function refreshSchedule() { S.cab = null; invalidate(); if (S.tab === "week") openWeek(S.weekStart); else if (S.tab === "day") openDay(S.date); }
 
 /* ---------- ДЕНЬ ---------- */
 function lessonState(l) {
@@ -1618,19 +1632,37 @@ async function openGroup() {
   document.body.classList.remove("hero-on");
   if (!S.feed) $("#v-group").innerHTML = `<div class="skel" style="height:120px;margin-top:16px"></div><div class="skel"></div><div class="skel"></div>`;
   try { S.feed = await api("/api/feed"); } catch (e) { return fail(e); }
+  if (S.feed.starosta && S.gMode !== "feed") ensureCabinet(true);
   if (S.tab === "group") renderGroup();
 }
-function renderGroup() {
-  bootDone();
-  const f = S.feed, el = $("#v-group"), g = S.me.group?.label || "";
-  const chats = f.chats.length ? `Ильич сидит в беседе «${esc(f.chats[0].title)}»${f.chats.length > 1 ? ` и ещё ${f.chats.length - 1}` : ""}` : "Ильича ещё нет в беседе группы — добавь, буду ловить #дз";
-  if (S.tab === "group") { document.body.classList.add("hero-on"); setPal(slotOf()); }
-  let html = `<section class="hero"><div class="h-date">Твоя группа</div><div class="h-lbl">в «Паре»</div>
-    <div class="h-count" style="height:auto;margin:8px 0 6px"><span class="h-word" style="font-size:${g.length <= 5 ? 76 : g.length === 6 ? 62 : g.length === 7 ? 52 : g.length <= 9 ? 44 : 36}px">${esc(g)}</span></div>
-    <div class="h-sub">${f.members ?? 0} ${plural(f.members ?? 0, "человек", "человека", "человек")}${f.roster_total ? ` из\u00a0${f.roster_total}` : ""}</div>
-    <div class="ily"><span class="body"><img src="${STK(f.chats.length ? 10 : 4)}" alt=""></span></div></section>
-    <div class="bub"><small>Ильич</small>${chats}</div>`;
-  if (f.starosta) html += wizardHtml(f) + `<section class="panel"><div class="pn-h"><b>Панель старосты</b><span>видишь только ты</span></div><div class="pn-g">
+const gSeg = () => `<div class="seg gseg"><button class="${S.gMode !== "feed" ? "on" : ""}" data-gmode="cab">Кабинет</button><button class="${S.gMode === "feed" ? "on" : ""}" data-gmode="feed">Лента группы</button></div>`;
+/* кабинет старосты: отдельный экран — сводка группы, действия, история */
+async function ensureCabinet(force = false) {
+  if ((S.cab && !force) || S.cabLoading) return;
+  S.cabLoading = true;
+  try { S.cab = await api("/api/starosta/cabinet"); } catch (e) { S.cab = S.cab || null; }
+  S.cabLoading = false;
+  if (S.tab === "group" && S.gMode !== "feed") renderCabinet();
+}
+function cabTile(act, k, big, sub, hot = false) {
+  return `<button class="ctile2 ${hot ? "hot" : ""}" data-act="${act}"><span class="k">${k}</span><b>${big}</b><span class="s">${sub}</span></button>`;
+}
+function renderCabinet() {
+  const f = S.feed, c = S.cab, el = $("#v-group"), g = S.me.group?.label || "";
+  const reach = c ? `${c.members}${c.roster_total ? `/${c.roster_total}` : ""}` : `${f.members}`;
+  let html = `<section class="hero"><div class="h-date">Кабинет старосты · ${esc(g)}</div><div class="h-lbl">в «Паре»</div>
+    <div class="h-count"><span class="h-dig t"><span>${[...reach].join("</span><span>")}</span></span></div>
+    <div class="h-sub">${c && c.roster_total ? (c.not_joined.length ? `ещё ${c.not_joined.length} ${plural(c.not_joined.length, "человек", "человека", "человек")} не подключились` : "вся группа на месте 💪") : "загрузи список группы — посчитаю, кого не хватает"}</div>
+    <div class="ily"><span class="body"><img src="${STK(21)}" alt=""></span></div></section>
+    <button class="bub" data-act="cab-reach"><small>Ильич · нажми</small>${!c ? "Считаю твою группу…" : !c.roster_total ? "Загрузи список группы — покажу, кого не хватает." : c.not_joined.length * 2 >= c.roster_total ? "Половина группы ещё не с нами. Кидай ссылку в беседу." : c.not_joined.length ? `Ещё ${c.not_joined.length} не с нами — посмотри кто.` : c.last_announcement && c.last_announcement.unread.length ? `Объявление не прочитали ${c.last_announcement.unread.length}. Пнуть?` : "Порядок в группе. Староста может выпить чаю."}</button>` + gSeg();
+  if (!c) { el.innerHTML = html + `<div class="skel" style="height:160px;margin-top:14px"></div><div class="skel"></div>`; return ensureCabinet(); }
+  const la = c.last_announcement, col = c.collections_open[0], pl = c.history.polls.find((x) => !x.closed);
+  html += `<div class="cgrid2">
+    ${cabTile("cab-ann", "Объявление", la && la.total ? `${la.reads}/${la.total}` : "—", !la ? "ещё не было" : !la.total ? "некому читать — позови группу" : la.unread.length ? `не прочитали ${la.unread.length}` : "прочитали все", !!(la && la.unread.length))}
+    ${cabTile(pl ? "cab-poll" : "poll-new", "Опрос", pl && pl.total ? `${pl.voted}/${pl.total}` : "—", pl ? esc(pl.question) : "создать новый", !!(pl && pl.voted < pl.total))}
+    ${cabTile("journal", "Пропуски", String(c.week.absent), c.week.pairs ? `за неделю, ${c.week.pairs} ${plural(c.week.pairs, "пара", "пары", "пар")} в журнале` : "журнал на этой неделе пуст")}
+    ${cabTile("cab-col", "Сборы", col && col.total ? `${col.count}/${col.total}` : "—", col ? esc(col.title) : "открытых нет", !!(col && col.count < col.total))}</div>`;
+  html += wizardHtml(f) + `<section class="panel"><div class="pn-h"><b>Действия</b><span>видишь только ты</span></div><div class="pn-g">
       <button data-act="ann-new">${icon("mega")}<b>Объявление</b></button>
       <button data-act="poll-new">${icon("poll")}<b>Опрос</b></button>
       <button data-act="col-new">${icon("folder")}<b>Собрать файлы</b></button>
@@ -1638,6 +1670,41 @@ function renderGroup() {
       <button data-act="roster">${icon("list")}<b>Список группы</b></button>
       <button data-act="export">${icon("xls")}<b>Excel за месяц</b></button></div>
       <button class="pn-i" data-act="invite">${icon("adduser")}<span><b>Позвать группу</b>ссылка в беседу или QR</span>${icon("r")}</button></section>`;
+  const hk = S.cabHist || "announcements", H = c.history[hk];
+  html += `<h2 class="h2">История</h2><div class="seg seg3 hseg">${[["announcements", "Объявления"], ["polls", "Опросы"], ["collections", "Сборы"]].map(([k, t]) => `<button class="${hk === k ? "on" : ""}" data-chist="${k}">${t}</button>`).join("")}</div>`;
+  html += !H.length ? `<div class="note">Пока пусто.</div>` : H.map((x) => {
+    const when = x.at ? `${human(x.at.slice(0, 10))}` : x.deadline ? `до ${human(x.deadline)}` : "";
+    if (hk === "announcements") return `<div class="hist"><div class="hi-t">${esc(x.text)}</div><div class="hi-m"><span>${when}</span><span class="pill ${x.reads < x.total ? "red" : ""}">прочитали ${x.reads} из ${x.total}</span>${x.unread.length ? `<button class="btn sm ghost" data-act="ann-remind" data-id="${x.id}">Напомнить</button>` : ""}</div></div>`;
+    if (hk === "polls") return `<div class="hist"><div class="hi-t">${esc(x.question)}</div><div class="hi-m"><span>${when}${x.winner ? ` · лидирует «${esc(x.winner)}»` : ""}</span><span class="pill">${x.voted} из ${x.total}</span>${x.closed ? `<span class="pill">закрыт</span>` : ""}</div></div>`;
+    return `<div class="hist"><div class="hi-t">${esc(x.title)}</div><div class="hi-m"><span>${when}</span><span class="pill ${x.count < x.total && !x.closed ? "red" : ""}">сдали ${x.count} из ${x.total}</span>${x.closed ? `<span class="pill">закрыт</span>` : `<button class="btn sm ghost" data-act="col-remind" data-id="${x.id}">Напомнить</button>`}</div></div>`;
+  }).join("");
+  el.innerHTML = html;
+}
+function cabSheet(kind) {
+  const c = S.cab; if (!c) return;
+  if (kind === "reach") return openSheet(`<h4>Кто ещё не в «Паре»</h4><div class="muted tiny">${c.roster_total ? `По списку группы: подключились ${c.members} из ${c.roster_total}` : "Загрузи список группы — увижу, кого не хватает"}</div>
+    <div style="margin-top:10px">${c.not_joined.map((n) => `<div class="set"><div class="l"><b>${esc(n)}</b><span>не подключился</span></div></div>`).join("") || (c.roster_total ? `<div class="note">Все из списка уже тут 💪</div>` : "")}</div>
+    ${c.unlisted.length ? `<div class="muted tiny" style="margin-top:12px">В «Паре», но не нашли себя в списке: ${c.unlisted.map(esc).join(", ")}</div>` : ""}
+    <button class="btn block" data-act="invite-post" style="margin-top:14px">Позвать в беседе</button>
+    ${c.roster_total ? "" : `<button class="btn ghost block" data-act="roster" style="margin-top:8px">Загрузить список группы</button>`}`);
+  if (kind === "ann") { const la = c.last_announcement; if (!la) return S.feed && $("[data-act='ann-new']")?.click();
+    return openSheet(`<h4>Последнее объявление</h4><div class="note" style="margin-top:8px">${esc(la.text)}</div>
+      <div class="muted tiny" style="margin-top:10px">Прочитали ${la.reads} из ${la.total}${la.unread.length ? ". Не прочитали:" : ""}</div>
+      ${la.unread.map((n) => `<div class="set"><div class="l"><b>${esc(n)}</b></div></div>`).join("")}
+      ${la.unread.length ? `<button class="btn block" data-act="ann-remind" data-id="${la.id}" style="margin-top:14px">Напомнить им</button>` : ""}`); }
+  if (kind === "col") { S.cabHist = "collections"; renderCabinet(); $(".hseg")?.scrollIntoView({ behavior: "smooth", block: "start" }); }
+}
+function renderGroup() {
+  bootDone();
+  const f = S.feed, el = $("#v-group"), g = S.me.group?.label || "";
+  const chats = f.chats.length ? `Ильич сидит в беседе «${esc(f.chats[0].title)}»${f.chats.length > 1 ? ` и ещё ${f.chats.length - 1}` : ""}` : "Ильича ещё нет в беседе группы — добавь, буду ловить #дз";
+  if (S.tab === "group") { document.body.classList.add("hero-on"); setPal(slotOf()); }
+  if (f.starosta && S.gMode !== "feed") return renderCabinet();
+  let html = `<section class="hero"><div class="h-date">Твоя группа</div><div class="h-lbl">в «Паре»</div>
+    <div class="h-count" style="height:auto;margin:8px 0 6px"><span class="h-word" style="font-size:${g.length <= 5 ? 76 : g.length === 6 ? 62 : g.length === 7 ? 52 : g.length <= 9 ? 44 : 36}px">${esc(g)}</span></div>
+    <div class="h-sub">${f.members ?? 0} ${plural(f.members ?? 0, "человек", "человека", "человек")}${f.roster_total ? ` из\u00a0${f.roster_total}` : ""}</div>
+    <div class="ily"><span class="body"><img src="${STK(f.chats.length ? 10 : 4)}" alt=""></span></div></section>
+    <div class="bub"><small>Ильич</small>${chats}</div>` + (f.starosta ? gSeg() : "");
   if (f.announcements.length) html += `<h2 class="h2">Объявления<small>от старосты</small></h2>` + f.announcements.map(annHtml).join("");
   if (f.polls.length) html += `<h2 class="h2">Опросы<small>от старосты</small></h2>` + f.polls.map(pollHtml).join("");
   if (f.collections.length) html += `<h2 class="h2">Сборы<small>сдать старосте</small></h2>` + f.collections.map(colHtml).join("");
@@ -2739,6 +2806,8 @@ document.addEventListener("click", async (e) => {
   const jg = t.closest("[data-jg]"); if (jg) { haptic(); const [i, k] = jg.dataset.jg.split(":"); const e = S.jr.edit[+i]; e[k] = !e[k] ? "absent" : e[k] === "absent" ? "excused" : ""; if (!e[k]) delete e[k]; return renderJournal(); }
   const wm = t.closest("[data-wmode]"); if (wm) { haptic(); S.wkMode = wm.dataset.wmode; try { localStorage.setItem("wkmode", S.wkMode); } catch (er) {} if (S.wkMode === "week") S.wkScrollTo = S.wkDay; return renderWeek(); }
   const wo = t.closest("[data-wopen]"); if (wo) { haptic(); S.wkMode = "day"; try { localStorage.setItem("wkmode", "day"); } catch (er) {} S.wkDay = wo.dataset.wopen; scrollTo(0, 0); return renderWeek(1); }
+  const gm = t.closest("[data-gmode]"); if (gm) { hsel(); S.gMode = gm.dataset.gmode; scrollTo(0, 0); return renderGroup(); }
+  const chs = t.closest("[data-chist]"); if (chs) { hsel(); S.cabHist = chs.dataset.chist; return renderCabinet(); }
   const wsel = t.closest("[data-wsel]"); if (wsel && S.wkMode === "week") { haptic(); const el = $(`#wd-${wsel.dataset.wsel}`); if (el) scrollTo({ top: scrollY + el.getBoundingClientRect().top - 96, behavior: "smooth" }); return; }
   if (wsel) { haptic(); const k = Math.sign(pd(wsel.dataset.wsel) - pd(S.wkDay)); S.wkDay = wsel.dataset.wsel; return renderWeek(k); }
   const op = t.closest("[data-open]"); if (op) { haptic(); closeSheet(); S.date = op.dataset.open; return setTab("day"); }
@@ -2845,6 +2914,8 @@ document.addEventListener("click", async (e) => {
   if (act === "ann-remind") { haptic(); try { const r = await api(`/api/announce/${a.dataset.id}/remind`, { method: "POST" }); toast(`Напомню ${r.sent} ${plural(r.sent, "человеку", "людям", "людям")}, когда не на паре`); } catch (er) { fail(er); } return; }
   if (act === "role") { haptic(); try { await api("/api/role/request", { method: "POST" }); toast("Заявку отправил админу"); S.feed.role_pending = true; renderGroup(); } catch (er) { fail(er); } return; }
   if (act === "journal") { haptic(); return journalSheet(); }
+  if (act === "cab-poll") { haptic(); S.cabHist = "polls"; renderCabinet(); return $(".hseg")?.scrollIntoView({ behavior: "smooth", block: "start" }); }
+  if (act === "cab-reach" || act === "cab-ann" || act === "cab-col") { haptic(); return cabSheet(act.slice(4)); }
   if (act === "roster") { haptic(); return rosterSheet(); }
   if (act === "rsave") { try { await api("/api/roster", { method: "POST", body: { names: $("#rtext").value } }); okHaptic(); toast("Список сохранён"); closeSheet(); } catch (er) { fail(er); } return; }
   if (act === "jsave") {
