@@ -472,6 +472,25 @@ body.hero-on .mast { border-radius: 0; background: var(--ha, var(--red)); }
 .plg.now { background: rgba(218,34,39,.1); color: var(--red-text); }
 .pl-end { display: flex; justify-content: space-between; padding: 14px 20px 10px; border-top: 1px solid var(--hair); font: 600 13px var(--text); color: var(--ink-2); }
 .pl-end b { color: var(--ink); }
+.pl-end { flex-wrap: wrap; gap: 4px 10px; }
+.act.skipq img { width: 30px; height: 30px; object-fit: contain; margin: -6px 2px -6px -4px; }
+.skipv { display: flex; gap: 12px; align-items: center; margin: 4px 0 8px; padding: 12px 14px 12px 8px; border-radius: 18px; background: var(--paper-2); }
+.skipv img { width: 72px; height: 72px; object-fit: contain; flex: none; }
+.skipv b { display: block; font: 800 18px/1.15 var(--display); color: var(--ink); }
+.skipv span { display: block; margin-top: 4px; font: 600 13.5px/1.4 var(--text); color: var(--ink-2); }
+.skipv small { display: block; margin-top: 6px; font: 600 11.5px/1.35 var(--text); color: var(--ink-3); }
+.skipv.no { background: rgba(218,34,39,.1); }
+.skipv.no b { color: var(--red-text); }
+.sc-hint { width: 100%; font: 600 11.5px var(--text); color: var(--ink-3); }
+#plist { position: relative; -webkit-touch-callout: none; }
+#plist.scrubbing .pl, #plist.scrubbing .plg { transition: background-color .15s var(--e-out); }
+.scur { position: absolute; left: 0; right: 0; top: 0; height: 0; border-top: 2px solid var(--red); pointer-events: none; z-index: 3; }
+.scur b { position: absolute; right: 12px; top: -13px; padding: 4px 9px; border-radius: 10px; background: var(--red); color: #fff; font: 800 12px/1 var(--text); box-shadow: 0 4px 10px -4px rgba(142,21,22,.5); }
+.h-trackw { touch-action: none; cursor: grab; }
+.h-trackw::before { content: ""; position: absolute; inset: -18px -10px -14px; }
+.hero.scrub #h-clock { padding: 1px 7px; border-radius: 8px; background: rgba(255,255,255,.24); color: #fff; }
+.hero.scrub .h-trackw .wk { transition: none; }
+.hero.scrub .h-track i { transition: none; }
 .dnav { display: flex; justify-content: center; gap: 8px; margin-top: 18px; }
 .exr { display: grid; grid-template-columns: 64px 1fr; gap: 2px 12px; padding: 12px 0; border-top: 1px solid var(--hair); }
 .exr .d { font: 400 22px/1 var(--num); grid-row: span 2; }
@@ -1102,8 +1121,8 @@ const mins = (m) => { m = Math.max(0, Math.round(m)); const h = Math.floor(m / 6
 const sgn = (t) => (t > 0 ? "+" : t < 0 ? "−" : "") + Math.abs(t);
 const tMin = (hhmm) => { const [h, m] = hhmm.split(":").map(Number); return h * 60 + m; };
 const hhmm = (m) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
-let clockOffset = 0;
-const now = () => Date.now() + clockOffset;
+let clockOffset = 0, scrubMs = 0;  // scrubMs — сдвиг на время «перемотки дня»
+const now = () => Date.now() + clockOffset + scrubMs;
 const nowMinMsk = () => { const d = new Date(now() + 3 * 3600e3); return d.getUTCHours() * 60 + d.getUTCMinutes(); };
 const audNo = (a) => { a = String(a || ""); const m = a.match(/(\d{3,4}[а-яa-z]?)/i); if (m) return m[1];
   const t = (a.split("/")[1] || a).replace(/^ауд\.?\s*/i, "").trim(); return t.length > 7 ? t.split(/\s/)[0].slice(0, 7) : t; };
@@ -1569,9 +1588,9 @@ function heroHtml(day, p, md) {
 const pop = (el) => { el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); };
 function setIly(s, q, t) {
   const img = $("#ily-img"), b = $("#bub"); if (!img || !b) return;
-  if (!img.src.endsWith(stkSrc(s))) swapSticker(img, stkSrc(s));
+  if (!(img._want || img.src).endsWith(stkSrc(s))) swapSticker(img, stkSrc(s));
   const html = `<small>${esc(t)}</small>${esc(q)}`;
-  if (b.innerHTML !== html) swapBubble(b, html);
+  if ((b._want ?? b.innerHTML) !== html) swapBubble(b, html);
 }
 const TAPS = [[0, "Ха! Щекотно."], [12, "Я тебе не кнопка лифта."], [20, "Ну и чего ты тыкаешь?"], [31, "Идея: открывай меня перед выходом — и не опоздаешь."],
   [39, "Думаю. Не мешай."], [17, "Это Мурзик. Он тоже за посещаемость."], [9, "Тяну учёбу, как бревно на субботнике."],
@@ -1594,7 +1613,7 @@ function ilyTap() {
 let idleT;
 function idleLoop() { clearTimeout(idleT); idleT = setTimeout(() => { idleOnce(); idleLoop(); }, 8000 + Math.random() * 8000); }
 function idleOnce() {
-  const img = $("#ily-img"); if (!img || REDUCE || S.tab !== "day" || document.hidden || Date.now() < tapUntil || $("#sheet").classList.contains("on")) return;
+  const img = $("#ily-img"); if (!img || REDUCE || SC || S.tab !== "day" || document.hidden || Date.now() < tapUntil || $("#sheet").classList.contains("on")) return;
   const night = slotOf() === "night", pick = night && Math.random() < .6 ? "yawn" : ["look", "hop", "wave", "lean"][Math.floor(Math.random() * 4)];
   const T = { look: [{ transform: "none" }, { transform: "rotate(-7deg) translateX(-4px)" }, { transform: "rotate(4deg)" }, { transform: "none" }],
     hop: [{ transform: "none" }, { transform: "translateY(-16px) scale(.97,1.04)" }, { transform: "translateY(0) scale(1.05,.94)" }, { transform: "none" }],
@@ -1612,7 +1631,7 @@ function alarm(p) {
 }
 /* раз в 15 секунд: цифры перещёлкиваются, лента обновляется; смена фазы — полная перерисовка */
 function tickHero() {
-  if (S.tab !== "day" || S.date !== S.today || !$("#hero") || $("#sheet").classList.contains("on")) return;
+  if (SC || S.tab !== "day" || S.date !== S.today || !$("#hero") || $("#sheet").classList.contains("on")) return;
   const day = S.days[S.today]; if (!day) return;
   const p = phaseOf(day); if (p.k !== S.hero.k) return phaseTransition();
   $("#h-clock").textContent = hhmm(nowMinMsk());
@@ -1626,6 +1645,100 @@ function tickHero() {
   const pl = $("#plist"); if (pl) pl.outerHTML = pathHtml(day);
   updateMinibar(day, p, mood(p, day));
 }
+
+/* ---------- ПЕРЕМОТКА ДНЯ: зажми пару и веди пальцем (или тяни полоску в шапке) — шапка живёт в выбранном времени ----------
+   Двигаем только «сейчас» (scrubMs): фазы, отсчёт, Ильич, небо и подсветка пар считаются тем же кодом, что и в реальном времени. */
+let SC = null;
+const scrubUsed = () => { try { return !!localStorage.getItem("scrub-used"); } catch (e) { return true; } };
+const realMinMsk = () => { const d = new Date(Date.now() + clockOffset + 3 * 3600e3); return d.getUTCHours() * 60 + d.getUTCMinutes() + d.getUTCSeconds() / 60; };
+function dayRange(day) {
+  const sl = day.slots, b = tMin(sl[0].lessons[0].begin), lv = day.leave ? tMin(day.leave.at) : b - 30;
+  return [Math.max(0, Math.min(lv, b) - 15), Math.min(24 * 60 - 1, tMin(sl[sl.length - 1].lessons[0].end) + 30)];
+}
+function whereAt(day, p, T) {
+  const t = hhmm(T), n = p.next, at = (x) => [audL(aud(x)), bshort(x.l.building)].filter((v) => v && v !== "—").join(", ");
+  switch (p.k) {
+    case "leave": return `В ${t} ты ещё дома — выход в ${day.leave.at}`;
+    case "before": return `В ${t} ты в пути — ${shortDisc(n.l.discipline)} в ${n.l.begin}, ${at(n)}`;
+    case "class": return `В ${t} ты на паре: ${shortDisc(p.cur.l.discipline)}, ${at(p.cur)}`;
+    case "break": return `В ${t} перемена — дальше ${at(n)}`;
+    case "window": return p.tr ? `В ${t} окно — потом едешь в ${bshort(n.l.building) || "другой корпус"}` : `В ${t} окно — потом ${shortDisc(n.l.discipline)}, ${at(n)}`;
+    case "transfer": return `В ${t} ты едешь в ${bshort(n.l.building) || "другой корпус"}`;
+    case "done": return `В ${t} ты уже свободен`;
+    default: return `В ${t} пар нет`;
+  }
+}
+const scRows = () => [...document.querySelectorAll("#plist [data-b]")].map((el) => ({ el, b: +el.dataset.b, e: +el.dataset.e, top: el.offsetTop, h: el.offsetHeight }));
+function yToT(rows, y, [s0, e0]) {
+  const f = rows[0], l = rows[rows.length - 1];
+  if (y < f.top) return Math.max(s0, f.b - (f.top - y) * (f.b - s0) / 60);
+  for (const r of rows) { if (y < r.top) return r.b; if (y < r.top + r.h) return r.b + (y - r.top) / r.h * (r.e - r.b); }
+  return Math.min(e0, l.e + (y - l.top - l.h) * (e0 - l.e) / 60);
+}
+function tToY(rows, T) {
+  const f = rows[0], l = rows[rows.length - 1];
+  if (T <= f.b) return f.top; if (T >= l.e) return l.top + l.h;
+  for (const r of rows) if (T < r.e) return T < r.b ? r.top : r.top + (T - r.b) / Math.max(1, r.e - r.b) * r.h;
+  return l.top + l.h;
+}
+function startScrub(src) {
+  const day = S.days[S.today], hero = $("#hero"), pl = $("#plist"); if (!day?.slots.length || !hero || !pl) return false;
+  SC = { src, day, range: dayRange(day), rows: scRows(), T: null, k: null, lbl: hero.querySelector(".h-lbl")?.innerHTML };
+  hero.classList.add("scrub"); pl.classList.add("scrubbing"); document.documentElement.style.overflowAnchor = "none";
+  const cur = document.createElement("div"); cur.className = "scur"; cur.innerHTML = "<b></b>"; pl.appendChild(cur); SC.cur = cur;
+  hsel();
+  try { localStorage.setItem("scrub-used", "1"); } catch (e) {}
+  $(".sc-hint")?.remove();
+  return true;
+}
+function scrubTo(T) {
+  const { day, range } = SC; T = Math.round(Math.max(range[0], Math.min(range[1], T)));
+  SC.cur.style.transform = `translateY(${tToY(SC.rows, T)}px)`; SC.cur.firstChild.textContent = hhmm(T);
+  if (SC.T === T) return; SC.T = T;
+  scrubMs = (T + .5 - realMinMsk()) * 6e4;
+  let p = phaseOf(day); if (p.k === "late") p = { ...p, k: "before" };  // «опаздываешь» имеет смысл только сейчас; в перемотке — ты в пути
+  const md = mood(p, day), hero = $("#hero"); if (!hero) return;
+  const pl = $("#plist"), top0 = pl.getBoundingClientRect().top;
+  if (SC.k !== p.k) { if (SC.k) hsel(); SC.k = p.k; }
+  $("#h-clock").textContent = hhmm(T);
+  const lb = hero.querySelector(".h-lbl"); if (lb) lb.textContent = p.k === "window" && p.tr ? "до выезда" : HLBL[p.k];
+  $("#h-count").innerHTML = countHtml(p);
+  $("#h-sub").textContent = whereAt(day, p, T);
+  const f = (T - range[0]) / (range[1] - range[0]), pr = $("#h-prog"), wk = $("#h-wk");
+  if (pr) pr.style.width = pct(SC.src === "track" ? f : p.prog ?? 0); if (wk) wk.style.left = pct(SC.src === "track" ? f : p.prog ?? 0);
+  const th = heroTheme(day, p), bg = $("#hbg");
+  if (document.body.dataset.pal !== th.pal) { setPal(th.pal); if (bg) bg.outerHTML = hbgHtml(th, day, p); }
+  setIly(md.s, md.q, md.t);
+  SC.rows.forEach((r) => { r.el.classList.toggle("now", r.b <= T && T < r.e); r.el.classList.toggle("past", r.e <= T); });
+  updateMinibar(day, p, md);
+  const d = pl.getBoundingClientRect().top - top0; if (SC.src === "list" && Math.abs(d) > .5) scrollBy(0, d);
+}
+function endScrub() {
+  if (!SC) return;
+  const hero = $("#hero"), lb = hero?.querySelector(".h-lbl");
+  if (lb && SC.lbl != null) lb.innerHTML = SC.lbl;
+  hero?.classList.remove("scrub"); $("#plist")?.classList.remove("scrubbing"); SC.cur.remove();
+  SC = null; scrubMs = 0; noClickUntil = Date.now() + 450; document.documentElement.style.overflowAnchor = "";
+  tickHero();  // вернуть настоящее «сейчас» (если фаза успела смениться — перерисует шапку целиком)
+}
+let lp = null, noClickUntil = 0;
+const trackT = (x) => { const r = $("#hero .h-track").getBoundingClientRect(); return SC.range[0] + Math.max(0, Math.min(1, (x - r.left) / r.width)) * (SC.range[1] - SC.range[0]); };
+const listT = (y) => yToT(SC.rows, y - $("#plist").getBoundingClientRect().top, SC.range);
+document.addEventListener("pointerdown", (e) => {
+  if (SC || S.tab !== "day" || S.date !== S.today || e.button > 0) return;
+  if (e.target.closest("#hero .h-trackw")) { if (startScrub("track")) { scrubTo(trackT(e.clientX)); e.preventDefault(); } return; }
+  if (!e.target.closest("#plist [data-b]")) return;
+  lp = { x: e.clientX, y: e.clientY, t: setTimeout(() => { const y = lp?.y; lp = null; if (y != null && startScrub("list")) scrubTo(listT(y)); }, 320) };
+});
+document.addEventListener("pointermove", (e) => {
+  if (lp) { if (Math.hypot(e.clientX - lp.x, e.clientY - lp.y) > 8) { clearTimeout(lp.t); lp = null; } else lp.y = e.clientY; }
+  if (SC) scrubTo(SC.src === "track" ? trackT(e.clientX) : listT(e.clientY));
+});
+const scrubStop = () => { if (lp) { clearTimeout(lp.t); lp = null; } endScrub(); };
+document.addEventListener("pointerup", scrubStop); document.addEventListener("pointercancel", scrubStop);
+document.addEventListener("touchmove", (e) => { if (SC) e.preventDefault(); }, { passive: false });  // пока перематываем — страница не скроллится
+document.addEventListener("contextmenu", (e) => { if (e.target.closest("#plist")) e.preventDefault(); });
+document.addEventListener("click", (e) => { if (Date.now() < noClickUntil) { e.stopPropagation(); e.preventDefault(); } }, true);  // отпустил палец — лист пары не открываем
 
 /* ---------- ПЛИТКИ ---------- */
 async function ensureExams() {
@@ -2010,23 +2123,23 @@ function pathHtml(day) {
   slots.forEach((s, i) => {
     const l = s.lessons[0];
     rows += ovRows(tMin(l.begin));
-    if (s.lessons.length > 1) rows += `<button class="pl par" data-act="par" data-date="${day.date}" data-i="${i}"><span class="tm">${l.begin}<small>${l.end}</small></span>
+    if (s.lessons.length > 1) rows += `<button class="pl par" data-act="par" data-date="${day.date}" data-i="${i}" data-b="${tMin(l.begin)}" data-e="${tMin(l.end)}"><span class="tm">${l.begin}<small>${l.end}</small></span>
       <span class="nm">${esc(l.discipline)}<span class="pill red">${s.lessons.length} вар.</span></span><span class="rm">?</span><span class="pp">Выбери свою подгруппу</span></button>`;
     else {
       const st = lessonState(l);
-      rows += `<button class="pl ${st === "next" ? "" : st}" data-act="lesson" data-oid="${l.oid}" data-date="${l.date}"><span class="tm">${l.begin}<small>${l.end}</small></span>
+      rows += `<button class="pl ${st === "next" ? "" : st}" data-act="lesson" data-oid="${l.oid}" data-date="${l.date}" data-b="${tMin(l.begin)}" data-e="${tMin(l.end)}"><span class="tm">${l.begin}<small>${l.end}</small></span>
         <span class="nm">${esc(l.discipline)}<span class="pill ${HOT.has(l.tag) || l.replaces ? "red" : ""}">${st === "now" ? "сейчас" : l.replaces ? "изменение" : esc(l.kind)}</span>${nthPill(l)}${(l.assess || []).map((a) => `<span class="pill as">📝 ${esc(a.label)}</span>`).join("")}</span>
         <span class="rm">${esc(audNo(l.auditorium) || "—")}</span><span class="pp">${esc([l.lecturer, (!i || slots[i - 1].lessons[0].building !== l.building) && bshort(l.building)].filter(Boolean).join(" · ") || " ")}</span>
         ${(l.assess || []).filter((a) => a.note).map((a) => `<span class="pp asn">📝 ${esc(a.note)}</span>`).join("")}</button>`;
     }
     if (s.gap !== undefined) {
-      const n = slots[i + 1].lessons[0], on = Date.parse(l.ends) <= now() && now() < Date.parse(n.starts) ? "now" : "";
-      if (s.transfer) rows += `<div class="plg ${on}"><img src="${STK(37)}" alt=""><span><b>переезд ~${mins(s.transfer)}</b> · ${esc(bshort(n.building) || "другой корпус")}${s.transfer > s.gap ? " · выходи сразу" : ""}</span></div>`;
-      else if (s.gap >= 30) rows += `<div class="plg ${on}"><span><b>окно ${mins(s.gap)}</b></span></div>`;
-      else rows += `<div class="plg ${on}"><img src="${STK([16, 0, 17, 34][i % 4])}" alt=""><span><b>перемена ${s.gap} мин</b></span></div>`;
+      const n = slots[i + 1].lessons[0], on = Date.parse(l.ends) <= now() && now() < Date.parse(n.starts) ? "now" : "", gb = `data-b="${tMin(l.end)}" data-e="${tMin(n.begin)}"`;
+      if (s.transfer) rows += `<div class="plg ${on}" ${gb}><img src="${STK(37)}" alt=""><span><b>переезд ~${mins(s.transfer)}</b> · ${esc(bshort(n.building) || "другой корпус")}${s.transfer > s.gap ? " · выходи сразу" : ""}</span></div>`;
+      else if (s.gap >= 30) rows += `<div class="plg ${on}" ${gb}><span><b>окно ${mins(s.gap)}</b></span></div>`;
+      else rows += `<div class="plg ${on}" ${gb}><img src="${STK([16, 0, 17, 34][i % 4])}" alt=""><span><b>перемена ${s.gap} мин</b></span></div>`;
     }
   });
-  return `<div class="plist" id="plist">${rows}${ovRows(Infinity)}<div class="pl-end"><span>Свободен в <b>${slots[slots.length - 1].lessons[0].end}</b></span></div></div>`;
+  return `<div class="plist" id="plist">${rows}${ovRows(Infinity)}<div class="pl-end"><span>Свободен в <b>${slots[slots.length - 1].lessons[0].end}</b></span>${day.date === S.today && !scrubUsed() ? `<small class="sc-hint">зажми пару и веди пальцем — перемотка дня</small>` : ""}</div></div>`;
 }
 
 /* ================= ДВИЖЕНИЕ ================= */
@@ -2085,15 +2198,18 @@ function rollDigit(sp, c) {
 }
 
 /* смена стикера: Ильич «переодевается» */
+/* смены идут чаще анимации (перемотка, тапы): после ухода показываем последнее, что просили, а не то, с чего начали */
 function swapSticker(img, src) {
   if (REDUCE) { img.src = src; return; }
-  anim(img, [{ transform: "none", opacity: 1 }, { transform: "scale(.7) rotate(-8deg)", opacity: 0 }], { duration: 170, easing: "ease-in" })
-    .finished.then(() => { img.src = src; anim(img, [{ transform: "scale(.6) rotate(8deg)", opacity: 0 }, { transform: "scale(1.06) rotate(-2deg)", opacity: 1, offset: .7 }, { transform: "none", opacity: 1 }], { duration: 460, easing: EASE.out }); });
+  img._want = src; if (img._busy) return; img._busy = true;
+  anim(img, [{ transform: "none", opacity: 1 }, { transform: "scale(.7) rotate(-8deg)", opacity: 0 }], { duration: 170, easing: "cubic-bezier(.4,0,1,1)" })
+    .finished.finally(() => { img._busy = false; img.src = img._want; anim(img, [{ transform: "scale(.6) rotate(8deg)", opacity: 0 }, { transform: "scale(1.06) rotate(-2deg)", opacity: 1, offset: .7 }, { transform: "none", opacity: 1 }], { duration: 460, easing: EASE.out }); });
 }
 function swapBubble(b, html) {
   if (REDUCE) { b.innerHTML = html; return; }
-  anim(b, [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateY(-6px) scale(.97)" }], { duration: 140, easing: "ease-in" })
-    .finished.then(() => { b.innerHTML = html; anim(b, [{ opacity: 0, transform: "translateY(8px) scale(.96)" }, { opacity: 1, transform: "none" }], { duration: 340, easing: EASE.spring }); });
+  b._want = html; if (b._busy) return; b._busy = true;
+  anim(b, [{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateY(-6px) scale(.97)" }], { duration: 140, easing: "cubic-bezier(.4,0,1,1)" })
+    .finished.finally(() => { b._busy = false; b.innerHTML = b._want; anim(b, [{ opacity: 0, transform: "translateY(8px) scale(.96)" }, { opacity: 1, transform: "none" }], { duration: 340, easing: EASE.spring }); });
 }
 
 /* Ильича можно тянуть пальцем: тянется туго и пружинит обратно */
@@ -2306,6 +2422,22 @@ function findLesson(oid, date) {
   const pool = [...(S.days[date]?.slots.flatMap((s) => s.lessons) || []), ...(S.home ? [...S.home.current, ...S.home.next] : [])];
   return pool.find((x) => x.oid === oid);
 }
+/* «Можно ли прогулять?» — Ильич решает по пропускам (журнал старосты), номеру пары в семестре и тому, что на паре */
+function skipVerdict(l) {
+  const a = S.abs?.items?.find((x) => x.discipline.toLowerCase() === l.discipline.toLowerCase());
+  const n = a?.absent || 0, nth = nthOf(l), left = nth ? nth[1] - nth[0] : null;
+  const hN = S.abs ? (n ? `Н уже ${n}.` : "По предмету пропусков нет.") : "";
+  const V = (lv, head, text, st) => ({ lv, head, text: [hN, text].filter(Boolean).join(" "), s: vary(st, 60) });
+  const what = l.tag === "exam" ? "экзамен" : "зачёт";
+  if (l.tag === "exam" || l.tag === "credit") return V("no", "Нет", R(`Это ${what}. Прогул = пересдача. Даже не начинай.`, `Это ${what}, гений. Прогул = пересдача. Нет, блин.`), [21, 11, 28]);
+  if (l.tag === "control" || (l.assess || []).length) return V("no", "Нет", "На этой паре контрольная. Пропустишь — будешь писать отдельно, один, в 8:30.", [23, 21, 11]);
+  if (nth?.[2] === 2) return V("no", "Нет", R("Это последняя перед зачётом — даже не думай.", "Это последняя перед зачётом — даже, блин, не думай."), [21, 28, 3]);
+  if (n >= 3) return V("no", "Лучше не надо", R("Ещё одна — и препод тебя запомнит. Иди.", "Ещё одна — и препод тебя запомнит навсегда. Иди, ёпт."), [23, 7, 11]);
+  if (nth?.[2] === 1) return V("meh", "Лучше сходи", "Последняя пара по предмету — на ней обычно говорят, что будет на зачёте.", [7, 23, 26]);
+  if (n === 2 && l.tag !== "lecture") return V("meh", "Лучше сходи", "На семинарах отмечают. Третья Н — уже разговор с преподом.", [23, 26, 7]);
+  if (l.tag === "lecture" && n <= 1) return V("ok", "Можно, но…", `Лекция${left ? `, впереди ещё ${left} ${plural(left, "пара", "пары", "пар")}` : ""}. Разок можно — конспект возьми у старосты.`, [24, 34, 5]);
+  return n ? V("meh", "Решай сам", "Пропуски уже есть, так что без фанатизма.", [26, 23, 7]) : V("ok", "Технически можно", "Но учиться, учиться и ещё раз учиться.", [25, 34, 24]);
+}
 function lessonSheet(oid, date) {
   const l = findLesson(oid, date); if (!l) return;
   const editable = S.days[date]?.editable ?? true;
@@ -2322,6 +2454,7 @@ function lessonSheet(oid, date) {
       ${l.replaces ? `<dt>Изменение</dt><dd style="color:var(--red-text)">${esc(l.replaces)}</dd>` : ""}
       ${(l.assess || []).map((a) => `<dt>📝 ${esc(cap(a.label))}</dt><dd style="color:var(--red-text)">${esc(a.note || "без подробностей")}<br><span class="muted tiny">${esc(a.author)}, из беседы</span></dd>`).join("")}
     </dl>
+    ${Date.parse(l.ends) > now() ? `<button class="act skipq" data-act="skip" data-oid="${l.oid}" data-date="${l.date}"><img src="${STK(23)}" alt="">Можно ли прогулять?</button>` : ""}
     ${l.url ? `<a class="act" href="${esc(l.url)}" target="_blank" rel="noopener">${icon("r")}Ссылка на занятие</a>` : ""}
     ${l.lecturer_full ? `<button class="act" data-act="teacher" data-name="${esc(l.lecturer_full)}">${icon("user")}Расписание преподавателя</button>` : ""}
     ${l.email ? `<button class="act" data-act="copy" data-text="${esc(l.email)}">${icon("check")}Скопировать почту преподавателя</button>` : ""}
@@ -3054,6 +3187,19 @@ document.addEventListener("click", async (e) => {
   if (act === "pick") {
     closeSheet();
     try { await api("/api/pick", { method: "POST", body: { oid: +a.dataset.oid } }); okHaptic(); toast("Запомнил подгруппу"); refreshSchedule(); } catch (er) { fail(er); }
+    return;
+  }
+  if (act === "skip") {
+    haptic(); a.disabled = true;
+    try { if (S.abs === undefined) S.abs = (await api("/api/absences")).absences; } catch (er) { S.abs = undefined; }
+    await ensureProgress();
+    const l = findLesson(+a.dataset.oid, a.dataset.date); if (!l || !a.isConnected) return;
+    const v = skipVerdict(l);
+    a.outerHTML = `<div class="skipv ${v.lv}" id="skipv"><img src="${stkSrc(v.s)}" alt=""><div><b>${esc(v.head)}</b><span>${esc(v.text)}</span>${S.abs === null ? `<small>Твоих пропусков не вижу — найди себя в списке группы: «Я» → Посещаемость.</small>` : ""}</div></div>`;
+    const el = $("#skipv");
+    anim(el, [{ opacity: 0, transform: "translateY(8px)", filter: "blur(4px)" }, { opacity: 1, transform: "none", filter: "blur(0)" }], { duration: 300 });
+    anim(el.querySelector("img"), [{ transform: "scale(.9) rotate(-6deg)" }, { transform: "none" }], { duration: 380 });
+    v.lv === "no" ? hnote("warning") : hsel();
     return;
   }
   if (act === "teacher") { closeSheet(); S.find = { ...S.find, type: "person", q: a.dataset.name, detail: null }; setTab("find"); runSearchThenOpen(a.dataset.name); return; }
