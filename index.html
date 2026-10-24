@@ -734,6 +734,9 @@ body[data-pal="aut"] { --ha: #DE9142; --hb: #8E4A1E; }
 @keyframes burst { 0% { transform: scale(.1); opacity: 1; } 60% { opacity: .9; } 100% { transform: scale(2.4); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .hbg .fx, .hbg .cloud, .hbg .star, .hbg .city .w, .h-trackw .wk { animation: none; } }
 .mecard { margin-top: 14px; }
+.set.themes { flex-wrap: wrap; }
+.set.themes .seg { width: 100%; margin: 4px 0 0; }
+html.theming, html.theming * { transition: background-color .35s ease, color .35s ease, border-color .35s ease !important; }
 .gseg { margin: 14px 0 0; }
 button.bub { display: block; text-align: left; }
 .cgrid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
@@ -1008,6 +1011,7 @@ button:not(:disabled):active, .tile:active { transform: scale(.97); }
 /* ---------- экран загрузки ---------- */
 const BOOT_LINES = ["Тяну расписание с ruz.fa.ru…", "Пересчитываю аудитории…", "Проверяю, не отменили ли пару…", "Ставлю чайник на перемену…", "Учиться, учиться и ещё раз загружаться…", "Верной дорогой идём…"];
 let bootI = 0;
+try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (themePref() === "auto" && !window.Telegram?.WebApp?.colorScheme) applyTheme(); }); } catch (e) {}
 { const pool = [15, 9, 24, 12, 31, 8, 36, 2, 6, 38], b = document.getElementById("bootimg"); if (b) b.src = `static/stickers/${String(pool[Math.floor(Math.random() * pool.length)]).padStart(2, "0")}.webp`; }
 const bootT = setInterval(() => { const q = document.getElementById("bootq"); if (!q) return;
   const n = q.cloneNode(false); n.textContent = BOOT_LINES[++bootI % BOOT_LINES.length]; n.className = "in"; q.replaceWith(n); }, 1800);
@@ -1041,8 +1045,10 @@ const cssVar = (n) => getComputedStyle(document.documentElement).getPropertyValu
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
 
 /* ---------- тема ---------- */
+/* тема: «как в Telegram» (по умолчанию), светлая или тёмная — выбор хранится на телефоне */
+const themePref = () => { try { return localStorage.getItem("theme") || "auto"; } catch (e) { return "auto"; } };
 function applyTheme() {
-  const forced = qs.get("theme");
+  const forced = qs.get("theme") || (themePref() !== "auto" ? themePref() : null);
   const dark = forced ? forced === "dark" : tg?.colorScheme ? tg.colorScheme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
   document.documentElement.dataset.theme = dark ? "dark" : "light";
   try { tg?.setHeaderColor(cssVar("--red")); tg?.setBackgroundColor(cssVar("--paper")); tg?.setBottomBarColor?.(cssVar("--paper")); } catch (e) {}
@@ -2527,6 +2533,8 @@ function renderMe() {
       <button class="mtile" data-act="mesec" data-sec="more"><span class="ic">${icon("cal")}</span><b>Календарь</b><span>Google, Apple, Яндекс</span></button></div>
     <div class="gcard mecard">
       <div class="set"><div class="l"><b>Ильич без цензуры</b><span>крепкие словечки — только у тебя</span></div>${sw("raw", rawOn())}</div>
+      <div class="set themes"><div class="l"><b>Тема</b><span>оформление приложения</span></div>
+        <div class="seg seg3">${[["auto", "Как в TG"], ["light", "Светлая"], ["dark", "Тёмная"]].map(([k, t]) => `<button class="${themePref() === k ? "on" : ""}" data-theme-set="${k}" aria-pressed="${themePref() === k}">${t}</button>`).join("")}</div></div>
       <div class="set"><div class="l"><b>Звуки</b><span>тихие щелчки и звоночек — выключены по умолчанию</span></div>${sw("snd", sndOn())}</div>
       <div class="set"><div class="l"><b>Живой закреп</b><span>сверху в чате с ботом: что сейчас и что дальше</span></div>${sw("pin_on", m.pin_on)}</div>
       ${tg?.addToHomeScreen ? `<div class="set"><div class="l"><b>Иконка на экране «Домой»</b><span>открывать «Пару» как приложение</span></div><button class="btn sm ghost" data-act="home-screen">Добавить</button></div>` : ""}</div>
@@ -2829,6 +2837,12 @@ document.addEventListener("click", async (e) => {
   const jg = t.closest("[data-jg]"); if (jg) { haptic(); const [i, k] = jg.dataset.jg.split(":"); const e = S.jr.edit[+i]; e[k] = !e[k] ? "absent" : e[k] === "absent" ? "excused" : ""; if (!e[k]) delete e[k]; return renderJournal(); }
   const wm = t.closest("[data-wmode]"); if (wm) { haptic(); S.wkMode = wm.dataset.wmode; try { localStorage.setItem("wkmode", S.wkMode); } catch (er) {} if (S.wkMode === "week") S.wkScrollTo = S.wkDay; return renderWeek(); }
   const wo = t.closest("[data-wopen]"); if (wo) { haptic(); S.wkMode = "day"; try { localStorage.setItem("wkmode", "day"); } catch (er) {} S.wkDay = wo.dataset.wopen; scrollTo(0, 0); return renderWeek(1); }
+  const th = t.closest("[data-theme-set]");
+  if (th) {
+    hsel(); try { localStorage.setItem("theme", th.dataset.themeSet); } catch (er) {}
+    document.documentElement.classList.add("theming"); applyTheme(); setTimeout(() => document.documentElement.classList.remove("theming"), 450);
+    return renderMe();
+  }
   const gm = t.closest("[data-gmode]"); if (gm) { hsel(); S.gMode = gm.dataset.gmode; scrollTo(0, 0); return renderGroup(); }
   const chs = t.closest("[data-chist]"); if (chs) { hsel(); S.cabHist = chs.dataset.chist; return renderCabinet(); }
   const wsel = t.closest("[data-wsel]"); if (wsel && S.wkMode === "week") { haptic(); const el = $(`#wd-${wsel.dataset.wsel}`); if (el) scrollTo({ top: scrollY + el.getBoundingClientRect().top - 96, behavior: "smooth" }); return; }
