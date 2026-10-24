@@ -908,20 +908,6 @@ button:not(:disabled):active, .tile:active { transform: scale(.97); }
 .tab:active { transform: scale(.92); }
 .view.on { animation: viewIn .26s var(--e-out) both; }
 @keyframes viewIn { from { opacity: 0; transform: translate3d(calc(var(--dir, 0) * 20px), 0, 0); } }
-/* переход между вкладками (View Transitions, где есть): старый экран уезжает, новый въезжает со стороны вкладки; шапка и панель на месте */
-main { view-transition-name: main; }
-.mast { view-transition-name: mast; }
-.tabbar { view-transition-name: tabbar; }
-::view-transition { pointer-events: none; }
-::view-transition-old(root), ::view-transition-new(root), ::view-transition-old(tabbar) { animation: none; }
-::view-transition-old(tabbar) { display: none; }
-::view-transition-new(tabbar) { animation: none; }
-::view-transition-group(main) { animation-duration: .26s; }
-::view-transition-old(main) { animation: vtOut .14s cubic-bezier(.4,0,1,1) both; }
-::view-transition-new(main) { animation: vtIn .26s var(--e-out) both; }
-@keyframes vtOut { to { opacity: 0; transform: translateX(calc(var(--dir, 0) * -10px)); } }
-@keyframes vtIn { from { opacity: 0; transform: translateX(calc(var(--dir, 0) * 20px)); } }
-html.vt .view.on { animation: none; }
 /* красная «капля» под активной вкладкой перетекает к нажатой */
 .tabbar nav { position: relative; }
 .tpill { position: absolute; left: 0; top: 0; height: 52px; width: 0; border-radius: 24px; background: var(--red); pointer-events: none; opacity: 0;
@@ -1136,21 +1122,23 @@ const HOT = new Set(["exam", "credit", "control"]);
    Текущий адрес туннеля лежит в url.json репозитория; при сбое запроса узнаём его заново и повторяем. */
 const PAGES_REPO = "cubafed/para-app";
 const ON_PAGES = location.hostname.endsWith("github.io");
-/* туннель меняет адрес примерно раз в 10 минут: адрес, который давно не отвечал, не пробуем, а сразу спрашиваем новый (один запрос на всех) */
+/* туннель меняет адрес раз в 20 минут: старый адрес пробуем сразу, а если он давно не отвечал — параллельно узнаём новый (один запрос на всех) */
 let API = "", API_T = 0, lookup = null;
 try { if (ON_PAGES) { API = localStorage.getItem("api-base") || ""; API_T = +localStorage.getItem("api-base-t") || 0; } } catch (e) {}
 function apiAlive() { API_T = Date.now(); try { localStorage.setItem("api-base-t", String(API_T)); } catch (e) {} }
 async function resolveApi(force = false) {
   if (!ON_PAGES) return "";
-  if (API && !force && Date.now() - API_T < 4 * 60e3) return API;
-  lookup ||= (async () => {
+  if (API && !force) { if (Date.now() - API_T > 4 * 60e3) lookupApi().catch(() => {}); return API; }
+  return lookupApi();
+}
+function lookupApi() {
+  return lookup ||= (async () => {
     const viaApi = fetch(`https://api.github.com/repos/${PAGES_REPO}/contents/url.json?t=${Date.now()}`, { headers: { Accept: "application/vnd.github.raw+json" }, cache: "no-store" }).then((r) => r.ok ? r.json() : Promise.reject(r.status));
     const { url } = await viaApi.catch(() => fetch(`url.json?t=${Date.now()}`, { cache: "no-store" }).then((r) => r.json()));
     API = String(url || "").replace(/\/$/, ""); apiAlive();
     try { localStorage.setItem("api-base", API); } catch (e) {}
     return API;
   })().catch((e) => { if (API) return API; throw e; }).finally(() => setTimeout(() => (lookup = null), 3000));
-  return lookup;
 }
 /* подпись Telegram — параметром, без своих заголовков: браузер не шлёт перед запросом проверку CORS (это ещё один круг через туннель) */
 const authQ = (path) => DEV_USER ? path : path + (path.includes("?") ? "&" : "?") + "_a=" + encodeURIComponent(tg?.initData || "");
@@ -1198,7 +1186,10 @@ function softRefresh() {  // пришло новее, чем показали: �
 /* одинаковые GET в одно время — один запрос; ответ, полученный только что (предзагрузка на старте), отдаём без сети */
 const inflight = new Map();
 function api(path, opts = {}) {
-  if (opts.method && opts.method !== "GET") { inflight.clear(); return apiNet(path, opts).then((r) => { cclear(); return r; }); }  // после правки старые ответы не показываем
+  if (opts.method && opts.method !== "GET") {  // после правки старые ответы не показываем (счётчик вкладок ничего не правит)
+    if (path === "/api/track") return apiNet(path, opts);
+    inflight.clear(); return apiNet(path, opts).then((r) => { cclear(); return r; });
+  }
   const m = inflight.get(path);
   if (m && (!m.t || Date.now() - m.t < 5000)) return m.p;
   const p = apiGet(path, opts), e = { p, t: 0 };
@@ -2860,14 +2851,14 @@ const TAB_ORDER = ["day", "week", "group", "find", "me"];
 const tracked = new Set();
 function trackE(e) { if (tracked.has(e) || DEV_USER) return; tracked.add(e); api("/api/track", { method: "POST", body: { e } }).catch(() => {}); }
 function movePill(jump = false) {
-  const p = $(".tpill"), b = $(".tab.on"); if (!p || !b) return;
+  const p = $(".tpill"), b = $(".tab.on"); if (!p || !b || !b.offsetWidth) return;
   if (jump) p.style.transition = "none";
   p.style.width = b.offsetWidth + "px"; p.style.height = b.offsetHeight + "px";
   p.style.transform = `translate(${b.offsetLeft}px, ${b.offsetTop}px)`;
   p.classList.add("on"); $(".tabbar").classList.add("pill");
   if (jump) { p.offsetWidth; p.style.transition = ""; }
 }
-addEventListener("resize", () => movePill(true));
+try { new ResizeObserver(() => movePill(true)).observe($(".tabbar nav")); } catch (e) { addEventListener("resize", () => movePill(true)); }
 function setTab(t) {
   const dir = Math.sign(TAB_ORDER.indexOf(t) - TAB_ORDER.indexOf(S.tab));
   document.documentElement.style.setProperty("--dir", String(dir || 0));
@@ -2882,12 +2873,7 @@ function setTab(t) {
     movePill(first);
     openTab(t);
   };
-  // плавный переход экрана, где браузер умеет (Android, iOS 18+); иначе — въезд экрана через CSS
-  if (!first && dir && !REDUCE && document.startViewTransition && !document.hidden) {
-    document.documentElement.classList.add("vt");
-    try { document.startViewTransition(swap).finished.finally(() => document.documentElement.classList.remove("vt")); }
-    catch (e) { document.documentElement.classList.remove("vt"); swap(); }
-  } else swap();
+  swap();
 }
 function openTab(t) {
   if (t === "day") openDay(S.date || S.today);
