@@ -892,11 +892,15 @@ button.bub { display: block; text-align: left; }
 .boot p { margin: 6px 0 0; min-height: 22px; font: 600 15px/1.4 "Golos", system-ui, sans-serif; color: #FFE1D6; }
 .boot p.in { animation: bootline .4s cubic-bezier(.22,1,.36,1) both; }
 @keyframes bootline { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-.boot .bar { width: 150px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.22); overflow: hidden; margin-top: 14px; }
-.boot .bar i { display: block; width: 40%; height: 100%; border-radius: 3px; background: #fff; animation: bootbar 1.1s cubic-bezier(.6,0,.4,1) infinite; }
+.boot .shd { width: 92px; height: 12px; margin-top: -4px; border-radius: 50%; background: rgba(60,8,10,.32); filter: blur(3px); animation: bootshd .9s cubic-bezier(.4,0,.6,1) infinite alternate; }
+@keyframes bootshd { to { transform: scale(.72); opacity: .55; } }
+/* честная полоска: заполняется по шагам загрузки (связь → профиль → расписание), блик бежит поверх */
+.boot .bar { position: relative; width: 168px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.22); overflow: hidden; margin-top: 14px; }
+.boot .bar i { display: block; width: 100%; height: 100%; border-radius: 3px; background: #fff; transform-origin: 0 50%; transform: scaleX(var(--bp, .08)); transition: transform .7s var(--e-out); }
+.boot .bar::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.75), transparent); width: 40%; animation: bootbar 1.2s cubic-bezier(.6,0,.4,1) infinite; mix-blend-mode: overlay; }
 @keyframes bootbob { from { transform: translateY(0) rotate(-3deg) scale(1, 1); } to { transform: translateY(-16px) rotate(3deg) scale(.98, 1.03); } }
 @keyframes bootbar { from { transform: translateX(-110%); } to { transform: translateX(260%); } }
-@media (prefers-reduced-motion: reduce) { .boot img, .boot .bar i, .boot p.in { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .boot img, .boot .shd, .boot .bar::after, .boot p.in { animation: none; } }
 
 /* ================= движение: плавно, как iOS ================= */
 :root { --e-out: cubic-bezier(.22,1,.36,1); --e-soft: cubic-bezier(.32,.72,0,1); --e-spring: cubic-bezier(.34,1.3,.64,1); }
@@ -906,6 +910,32 @@ button:not(:disabled):active, .tile:active { transform: scale(.97); }
 .tab:active { transform: scale(.92); }
 .view.on { animation: viewIn .34s var(--e-out) both; }
 @keyframes viewIn { from { opacity: 0; transform: translate3d(calc(var(--dir, 0) * 28px), 6px, 0); } }
+/* переход между вкладками (View Transitions, где есть): старый экран уезжает, новый въезжает со стороны вкладки; шапка и панель на месте */
+main { view-transition-name: main; }
+.mast { view-transition-name: mast; }
+.tabbar { view-transition-name: tabbar; }
+::view-transition { pointer-events: none; }
+::view-transition-old(root), ::view-transition-new(root), ::view-transition-old(tabbar) { animation: none; }
+::view-transition-old(tabbar) { display: none; }
+::view-transition-new(tabbar) { animation: none; }
+::view-transition-group(main) { animation-duration: .38s; }
+::view-transition-old(main) { animation: vtOut .22s cubic-bezier(.4,0,1,1) both; }
+::view-transition-new(main) { animation: vtIn .38s var(--e-out) both; }
+@keyframes vtOut { to { opacity: 0; transform: translateX(calc(var(--dir, 0) * -36px)) scale(.985); } }
+@keyframes vtIn { from { opacity: 0; transform: translateX(calc(var(--dir, 0) * 48px)); } }
+html.vt .view.on { animation: none; }
+/* красная «капля» под активной вкладкой перетекает к нажатой */
+.tabbar nav { position: relative; }
+.tpill { position: absolute; left: 0; top: 0; height: 52px; width: 0; border-radius: 24px; background: var(--red); pointer-events: none; opacity: 0;
+  transition: transform .5s cubic-bezier(.3,1.35,.5,1), width .5s cubic-bezier(.3,1.35,.5,1), opacity .2s; }
+.tpill.on { opacity: 1; }
+.tpill.go { animation: tpillgo .5s var(--e-out); }
+@keyframes tpillgo { 40% { scale: 1.06 .9; } }
+.tabbar.pill .tab.on { background: transparent; }
+.tabbar .tab { z-index: 1; }
+.tabbar .tab:not(:disabled) { transition: color .3s var(--e-out), transform .18s var(--e-out), background-color .2s var(--e-out); }
+.tab.on svg.i { animation: tabpop .45s cubic-bezier(.34,1.6,.64,1); }
+@keyframes tabpop { 0% { transform: scale(.7) translateY(3px); } }
 .anim .tile { animation: none; opacity: 1; transform: none; }
 .h-dig span.flip { animation: none; }
 .h-dig { perspective: 400px; }
@@ -940,7 +970,8 @@ button:not(:disabled):active, .tile:active { transform: scale(.97); }
 .fest span { font: 600 15px/1.4 var(--text); color: #FFE1D6; margin-top: 8px; max-width: 30ch; }
 .fest small { font: 600 12px var(--text); color: rgba(255,255,255,.6); margin-top: 22px; }
 @media (prefers-reduced-motion: reduce) {
-  .view.on, .hero.urgent .h-dig, .skel, .tile.skel-t { animation: none; }
+  .view.on, .hero.urgent .h-dig, .skel, .tile.skel-t, .tab.on svg.i, .tpill.go { animation: none; }
+  .tpill { transition: none; }
   .sheet, .toast, .minibar, button, .tile { transition-duration: .01ms !important; }
 }
 </style>
@@ -981,7 +1012,7 @@ button:not(:disabled):active, .tile:active { transform: scale(.97); }
   <symbol id="w-storm" viewBox="0 0 24 24"><path d="M6 14h12a4 4 0 0 0 0-8 6 6 0 0 0-11.5 2A3 3 0 0 0 6 14z"/><path d="m13 14-3 4h4l-3 4"/></symbol>
 </svg>
 
-<div class="boot" id="boot" aria-live="polite"><img id="bootimg" src="static/stickers/15.webp" alt=""><span class="bw">Пара</span><p id="bootq">Тяну расписание с ruz.fa.ru…</p><span class="bar"><i></i></span></div>
+<div class="boot" id="boot" aria-live="polite"><img id="bootimg" src="static/stickers/15.webp" alt=""><span class="shd" aria-hidden="true"></span><span class="bw">Пара</span><p id="bootq">Тяну расписание с ruz.fa.ru…</p><span class="bar"><i></i></span></div>
 <div class="minibar" id="minibar" aria-hidden="true"></div>
 <header class="mast"><span class="word">Пара</span><span class="rule" aria-hidden="true"></span><span class="grp hide" id="hdrGroup"></span></header>
 
@@ -994,6 +1025,7 @@ button:not(:disabled):active, .tile:active { transform: scale(.97); }
 </main>
 
 <div class="tabbar"><nav>
+  <span class="tpill" aria-hidden="true"></span>
   <button class="tab" data-tab="day"><svg class="i"><use href="#i-day"/></svg>День</button>
   <button class="tab" data-tab="week"><svg class="i"><use href="#i-week"/></svg>Неделя</button>
   <button class="tab" data-tab="group"><svg class="i"><use href="#i-group"/></svg>Группа</button>
@@ -1015,7 +1047,24 @@ try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () =
 { const pool = [15, 9, 24, 12, 31, 8, 36, 2, 6, 38], b = document.getElementById("bootimg"); if (b) b.src = `static/stickers/${String(pool[Math.floor(Math.random() * pool.length)]).padStart(2, "0")}.webp`; }
 const bootT = setInterval(() => { const q = document.getElementById("bootq"); if (!q) return;
   const n = q.cloneNode(false); n.textContent = BOOT_LINES[++bootI % BOOT_LINES.length]; n.className = "in"; q.replaceWith(n); }, 1800);
-function bootDone() { const b = document.getElementById("boot"); if (!b || b.classList.contains("off")) return; clearInterval(bootT); b.classList.add("off"); setTimeout(() => b.remove(), 450); }
+const bootStep = (p) => { const b = document.getElementById("boot"); if (b && p > (+b.style.getPropertyValue("--bp") || 0)) b.style.setProperty("--bp", p); };
+/* загрузка закончилась: полоска добегает, красный экран сворачивается в шапку, Ильич подпрыгивает и исчезает */
+function bootDone() {
+  const b = document.getElementById("boot"); if (!b || b.dataset.out) return;
+  b.dataset.out = "1"; clearInterval(bootT); bootStep(1);
+  const plain = () => { b.classList.add("off"); setTimeout(() => b.remove(), 450); };
+  if (REDUCE || !b.animate) return plain();
+  setTimeout(() => {
+    const top = document.body.classList.contains("hero-on") && $("#hero") ? $("#hero").getBoundingClientRect().bottom : $(".mast").getBoundingClientRect().bottom;
+    const cut = Math.max(0, innerHeight - Math.max(60, Math.min(top, innerHeight * .6)));
+    $("#bootimg")?.animate([{ transform: "none" }, { transform: "translateY(-46px) scale(1.06)", offset: .35 }, { transform: "translateY(-120px) scale(.4)", opacity: 0 }], { duration: 520, easing: "cubic-bezier(.3,0,.6,1)", fill: "forwards" });
+    b.querySelectorAll(".bw, p, .bar, .shd").forEach((x, i) => x.animate([{ opacity: 1 }, { opacity: 0, transform: "translateY(-14px)" }], { duration: 220, delay: i * 30, fill: "forwards" }));
+    const a = b.animate([{ clipPath: "inset(0 0 0 0 round 0)" }, { clipPath: `inset(0 0 ${cut}px 0 round 0 0 28px 28px)`, opacity: 1, offset: .7 }, { clipPath: `inset(0 0 ${cut}px 0 round 0 0 28px 28px)`, opacity: 0 }],
+      { duration: 640, delay: 120, easing: EASE.soft, fill: "forwards" });
+    b.style.pointerEvents = "none";
+    a.onfinish = () => b.remove();
+  }, 160);
+}
 setTimeout(bootDone, 15000);
 const tg = window.Telegram && window.Telegram.WebApp;
 const qs = new URLSearchParams(location.search);
@@ -1094,28 +1143,35 @@ const HOT = new Set(["exam", "credit", "control"]);
    Текущий адрес туннеля лежит в url.json репозитория; при сбое запроса узнаём его заново и повторяем. */
 const PAGES_REPO = "cubafed/para-app";
 const ON_PAGES = location.hostname.endsWith("github.io");
-let API = "";
-try { API = ON_PAGES ? localStorage.getItem("api-base") || "" : ""; } catch (e) {}
+/* туннель меняет адрес примерно раз в 10 минут: адрес, который давно не отвечал, не пробуем, а сразу спрашиваем новый (один запрос на всех) */
+let API = "", API_T = 0, lookup = null;
+try { if (ON_PAGES) { API = localStorage.getItem("api-base") || ""; API_T = +localStorage.getItem("api-base-t") || 0; } } catch (e) {}
+function apiAlive() { API_T = Date.now(); try { localStorage.setItem("api-base-t", String(API_T)); } catch (e) {} }
 async function resolveApi(force = false) {
   if (!ON_PAGES) return "";
-  if (API && !force) return API;
-  const viaApi = fetch(`https://api.github.com/repos/${PAGES_REPO}/contents/url.json?t=${Date.now()}`, { headers: { Accept: "application/vnd.github.raw+json" }, cache: "no-store" }).then((r) => r.ok ? r.json() : Promise.reject(r.status));
-  const { url } = await viaApi.catch(() => fetch(`url.json?t=${Date.now()}`, { cache: "no-store" }).then((r) => r.json()));
-  API = String(url || "").replace(/\/$/, "");
-  try { localStorage.setItem("api-base", API); } catch (e) {}
-  return API;
+  if (API && !force && Date.now() - API_T < 4 * 60e3) return API;
+  lookup ||= (async () => {
+    const viaApi = fetch(`https://api.github.com/repos/${PAGES_REPO}/contents/url.json?t=${Date.now()}`, { headers: { Accept: "application/vnd.github.raw+json" }, cache: "no-store" }).then((r) => r.ok ? r.json() : Promise.reject(r.status));
+    const { url } = await viaApi.catch(() => fetch(`url.json?t=${Date.now()}`, { cache: "no-store" }).then((r) => r.json()));
+    API = String(url || "").replace(/\/$/, ""); apiAlive();
+    try { localStorage.setItem("api-base", API); } catch (e) {}
+    return API;
+  })().catch((e) => { if (API) return API; throw e; }).finally(() => setTimeout(() => (lookup = null), 3000));
+  return lookup;
 }
-const apiUrl = async (path) => (await resolveApi()) + path;
+/* подпись Telegram — параметром, без своих заголовков: браузер не шлёт перед запросом проверку CORS (это ещё один круг через туннель) */
+const authQ = (path) => DEV_USER ? path : path + (path.includes("?") ? "&" : "?") + "_a=" + encodeURIComponent(tg?.initData || "");
+const devHeaders = () => (DEV_USER ? { "X-Dev-User": DEV_USER } : {});
+const apiUrl = async (path) => (await resolveApi()) + authQ(path);
 async function followTunnel() { /* старые ссылки на туннель: переезжаем на постоянную страницу */
   if (ON_PAGES || DEV_USER || !/\.(lhr\.life|trycloudflare\.com)$/.test(location.hostname)) return false;
   location.replace(`https://${PAGES_REPO.split("/")[0]}.github.io/${PAGES_REPO.split("/")[1]}/` + location.search + location.hash);
   return true;
 }
 async function apiNet(path, { method = "GET", body } = {}) {
-  const headers = { "X-Init-Data": tg?.initData || "" };
-  if (DEV_USER) headers["X-Dev-User"] = DEV_USER;
-  if (body !== undefined) headers["Content-Type"] = "application/json";
-  const send = async (base) => fetch(base + path, { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined });
+  const headers = devHeaders();
+  if (body !== undefined) headers["Content-Type"] = "text/plain;charset=UTF-8"; // JSON, но «простым» типом — без проверки CORS
+  const send = async (base) => fetch(base + authQ(path), { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined });
   const dead = (x) => !(x.headers.get("content-type") || "").includes("json") && x.status >= 400; // страница туннеля, а не наш сервер
   let r;
   try { r = await send(await resolveApi()); if (dead(r)) throw new Error("tunnel"); }
@@ -1124,6 +1180,7 @@ async function apiNet(path, { method = "GET", body } = {}) {
     if (!ON_PAGES) throw e;
     r = await send(await resolveApi(true)); // туннель сменил адрес — спросили новый и повторили
   }
+  if (!dead(r)) apiAlive();
   const j = await r.json().catch(() => ({}));
   if (!r.ok) { const e = new Error(j.error || `HTTP ${r.status}`); e.status = r.status; throw e; }
   return j;
@@ -1145,8 +1202,18 @@ function softRefresh() {  // пришло новее, чем показали: �
     if (S.tab === "day") openDay(S.date); else if (S.tab === "week") openWeek(S.weekStart); else if (S.tab === "group") openGroup(); else if (S.tab === "me") openMe();
   }, 200);
 }
-async function api(path, opts = {}) {
-  if (opts.method && opts.method !== "GET") { const r = await apiNet(path, opts); cclear(); return r; }  // после правки старые ответы не показываем
+/* одинаковые GET в одно время — один запрос; ответ, полученный только что (предзагрузка на старте), отдаём без сети */
+const inflight = new Map();
+function api(path, opts = {}) {
+  if (opts.method && opts.method !== "GET") { inflight.clear(); return apiNet(path, opts).then((r) => { cclear(); return r; }); }  // после правки старые ответы не показываем
+  const m = inflight.get(path);
+  if (m && (!m.t || Date.now() - m.t < 5000)) return m.p;
+  const p = apiGet(path, opts), e = { p, t: 0 };
+  inflight.set(path, e);
+  p.then(() => { e.t = Date.now(); }, () => { if (inflight.get(path) === e) inflight.delete(path); });
+  return p;
+}
+async function apiGet(path, opts) {
   if ((DEV_USER && !qs.get("swr")) || !SWR.test(path)) return apiNet(path, opts);
   const hit = cget(path); let used = false;
   const net = apiNet(path, opts).then((r) => {
@@ -1175,7 +1242,7 @@ async function ensureWeek(ws) {
   r.days.forEach((d) => (S.days[d.date] = d));
 }
 async function ensureChecklist() { if (!S.checklist) S.checklist = (await api("/api/checklist")).disciplines; }
-function invalidate() { S.days = {}; S.home = null; S.checklist = null; S.teachers = undefined; S.prog = undefined; }
+function invalidate() { inflight.clear(); S.days = {}; S.home = null; S.checklist = null; S.teachers = undefined; S.prog = undefined; }
 /* расписание поменялось (выбрали подгруппу, скрыли пару, староста отменил…): сбросить и перечитать то, что сейчас на экране */
 function refreshSchedule() { S.cab = null; invalidate(); if (S.tab === "week") openWeek(S.weekStart); else if (S.tab === "day") openDay(S.date); }
 
@@ -1330,7 +1397,7 @@ async function openDay(date) {
     if (date === S.today && !S.home) jobs.push(api("/api/home").then((h) => { S.home = h; if (!h._stale) clockOffset = Date.parse(h.now) - Date.now(); }));
     if (date === S.today && !S.feed) jobs.push(api("/api/feed").then((f) => { S.feed = f; }).catch(() => {}));
     if (date === S.today && !S.study) jobs.push(api("/api/study").then((r) => { S.study = r.sets; }).catch(() => {}));
-    await Promise.all(jobs);
+    bootStep(.75); await Promise.all(jobs);
   } catch (e) { fail(e); }
   if (S.tab === "day" && S.date === date) renderDay();
 }
@@ -1873,8 +1940,7 @@ async function uploadStudy() {
     let r;
     if (f) {
       const fd = new FormData(); fd.append("file", f); fd.append("discipline", S.up.disc); fd.append("exam_date", S.up.date);
-      const headers = { "X-Init-Data": tg?.initData || "" }; if (DEV_USER) headers["X-Dev-User"] = DEV_USER;
-      const resp = await fetch(await apiUrl("/api/study"), { method: "POST", headers, body: fd }); r = await resp.json();
+      const resp = await fetch(await apiUrl("/api/study"), { method: "POST", headers: devHeaders(), body: fd }); r = await resp.json();
       if (!resp.ok) throw Object.assign(new Error(r.error), { status: resp.status });
     } else r = await api("/api/study", { method: "POST", body: { discipline: S.up.disc, exam_date: S.up.date, text } });
     okHaptic(); toast(`Загрузил ${r.count} вопросов`); S.study = (await api("/api/study")).sets; studySheet(r.id);
@@ -2800,15 +2866,38 @@ function goBack() {
 const TAB_ORDER = ["day", "week", "group", "find", "me"];
 const tracked = new Set();
 function trackE(e) { if (tracked.has(e) || DEV_USER) return; tracked.add(e); api("/api/track", { method: "POST", body: { e } }).catch(() => {}); }
+function movePill(jump = false) {
+  const p = $(".tpill"), b = $(".tab.on"); if (!p || !b) return;
+  if (jump) p.style.transition = "none";
+  p.style.width = b.offsetWidth + "px"; p.style.height = b.offsetHeight + "px";
+  p.style.transform = `translate(${b.offsetLeft}px, ${b.offsetTop}px)`;
+  p.classList.add("on"); $(".tabbar").classList.add("pill");
+  if (jump) { p.offsetWidth; p.style.transition = ""; }
+  else { p.classList.remove("go"); p.offsetWidth; p.classList.add("go"); }
+}
+addEventListener("resize", () => movePill(true));
 function setTab(t) {
   const dir = Math.sign(TAB_ORDER.indexOf(t) - TAB_ORDER.indexOf(S.tab));
   document.documentElement.style.setProperty("--dir", String(dir || 0));
   if (t !== "day") $("#minibar")?.classList.remove("on");
-  S.tab = t; trackE("tab:" + t); sfx("tab");
-  document.querySelectorAll(".tab").forEach((b) => { b.classList.toggle("on", b.dataset.tab === t); b.setAttribute("aria-current", b.dataset.tab === t ? "page" : "false"); });
-  document.querySelectorAll(".view").forEach((s) => s.classList.toggle("on", s.id === "v-" + t));
-  window.scrollTo(0, 0);
-  if (t !== "day") document.body.classList.remove("hero-on");
+  const first = !$(".tabbar").classList.contains("pill");
+  S.tab = t; trackE("tab:" + t); if (!first) sfx("tab");
+  const swap = () => {
+    document.querySelectorAll(".tab").forEach((b) => { b.classList.toggle("on", b.dataset.tab === t); b.setAttribute("aria-current", b.dataset.tab === t ? "page" : "false"); });
+    document.querySelectorAll(".view").forEach((s) => s.classList.toggle("on", s.id === "v-" + t));
+    window.scrollTo(0, 0);
+    if (t !== "day") document.body.classList.remove("hero-on");
+    movePill(first);
+    openTab(t);
+  };
+  // плавный переход экрана, где браузер умеет (Android, iOS 18+); иначе — въезд экрана через CSS
+  if (!first && dir && !REDUCE && document.startViewTransition && !document.hidden) {
+    document.documentElement.classList.add("vt");
+    try { document.startViewTransition(swap).finished.finally(() => document.documentElement.classList.remove("vt")); }
+    catch (e) { document.documentElement.classList.remove("vt"); swap(); }
+  } else swap();
+}
+function openTab(t) {
   if (t === "day") openDay(S.date || S.today);
   if (t === "week") { if (S.wkMode === "week") S.wkScrollTo = S.wkDay || S.today; openWeek(S.weekStart || monday(S.date || S.today)); }
   if (t === "find") {
@@ -2885,8 +2974,7 @@ document.addEventListener("click", async (e) => {
   }
   if (act === "qr") {
     haptic();
-    const headers = { "X-Init-Data": tg?.initData || "" }; if (DEV_USER) headers["X-Dev-User"] = DEV_USER;
-    try { const svg = await (await fetch(await apiUrl("/api/invite.svg"), { headers })).text();
+    try { const svg = await (await fetch(await apiUrl("/api/invite.svg"), { headers: devHeaders() })).text();
       openSheet(`<h4>QR для группы</h4><div class="muted tiny">Покажи на первой паре — одногруппники наведут камеру и сразу окажутся в ${esc(S.me.group?.label || "")}.</div><div class="qr">${svg}</div>
         <button class="btn block ghost" data-act="share" data-text="${esc(`Подключайтесь к «Паре»: ${S.feed.invite}`)}">Отправить ссылкой</button>`); } catch (er) { fail(er); }
     return;
@@ -3109,7 +3197,12 @@ function start() {
   try { tg?.ready(); tg?.expand(); tg?.disableVerticalSwipes?.(); tg?.onEvent?.("themeChanged", applyTheme); tg?.BackButton?.onClick(goBack); } catch (e) {}
   const fatal = (title, text, retry = false) => { bootDone(); $("main").innerHTML = `<div class="empty"><img class="stk" src="static/stickers/11.webp" alt=""><div class="big">${title}</div><p>${text}</p>${retry ? `<button class="btn" onclick="location.reload()" style="margin-top:18px">ещё раз</button>` : ""}</div>`; $(".tabbar").classList.add("hide"); };
   if (!tg?.initData && !DEV_USER) return fatal("Открой через меню", "Нажми кнопку «Приложение» слева от поля ввода в чате с ботом — так Telegram передаёт, кто ты.");
-  try { const b = await api("/api/bootstrap"); S.me = b.me; S.today = b._stale ? mskToday() : b.today; if (!b._stale) clockOffset = Date.parse(b.now) - Date.now(); }
+  bootStep(.15); resolveApi().then(() => bootStep(.35), () => {});
+  const boot0 = api("/api/bootstrap");
+  // данные дня просим сразу, не дожидаясь профиля: минус один круг через туннель (openDay подхватит эти же запросы)
+  if (cget("/api/bootstrap")?.me?.onboarded !== false) { const ws = monday(mskToday());
+    [`/api/days?start=${ws}&end=${addDays(ws, 6)}`, "/api/checklist", "/api/home", "/api/feed", "/api/study"].forEach((p) => api(p).catch(() => {})); }
+  try { const b = await boot0; bootStep(.62); S.me = b.me; S.today = b._stale ? mskToday() : b.today; if (!b._stale) clockOffset = Date.parse(b.now) - Date.now(); }
   catch (e) { return fatal("Нет связи", e.status === 401 ? "Сессия устарела. Закрой приложение и открой его заново." : "Не удалось подключиться. Проверь интернет.", e.status !== 401); }
   if (!S.me.onboarded || !S.me.group) { $("#onb").classList.add("on"); return onbIntro(); }
   start();
