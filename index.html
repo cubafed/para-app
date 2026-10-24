@@ -6,7 +6,6 @@
 <title>Пара</title>
 <script>window.__errs = []; addEventListener("error", (e) => __errs.push(`${e.message} @${e.lineno}:${e.colno}`)); addEventListener("unhandledrejection", (e) => __errs.push(String(e.reason && e.reason.stack || e.reason)));</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="preload" href="static/stickers/15.webp" as="image">
 <link rel="preload" href="static/fonts/geologica-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="static/fonts/golos-text-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="static/fonts/dela-gothic-one-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -902,22 +901,17 @@ button.bub { display: block; text-align: left; }
 .ocard.ostep::after { content: "›"; position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font: 700 24px var(--text); color: var(--red-text); }
 .ocard.ostep.done::after { content: "✓"; }
 .onb .cta { background: var(--paper); }
-.boot { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 24px; text-align: center; color: #fff;
-  background: radial-gradient(120% 80% at 50% 0%, #EC3134 0%, #DA2227 45%, #A8181C 100%); transition: opacity .3s var(--e-out); }
+.boot { position: fixed; inset: 0; z-index: 70; overflow: hidden; color: #fff; background: radial-gradient(95% 55% at 50% 0%, #E43C40 0%, #D62228 52%, #A81C20 100%); transition: opacity .3s var(--e-out); }
 .boot.off { opacity: 0; pointer-events: none; }
-.boot img { width: 168px; height: 168px; object-fit: contain; filter: drop-shadow(0 16px 20px rgba(44,32,24,.35)); animation: bootbob .9s cubic-bezier(.4,0,.6,1) infinite alternate; transform-origin: 50% 90%; }
-.boot .bw { font: 800 40px/1 "Geologica", "Golos", system-ui, sans-serif; letter-spacing: -.03em; display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; }
-.boot .bw::after { content: ""; width: 11px; height: 11px; border-radius: 50%; background: #FCCAA7; transform: translateY(-11px); }
-.boot p { margin: 6px 0 0; min-height: 22px; font: 600 15px/1.4 "Golos", system-ui, sans-serif; color: #FFE1D6; }
-.boot p.in { animation: bootline .4s cubic-bezier(.22,1,.36,1) both; }
-@keyframes bootline { from { opacity: 0; transform: translateY(8px); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
-.boot .shd { width: 92px; height: 12px; margin-top: -4px; border-radius: 50%; background: rgba(60,8,10,.32); filter: blur(3px); animation: bootshd .9s cubic-bezier(.4,0,.6,1) infinite alternate; }
-@keyframes bootshd { to { transform: scale(.72); opacity: .55; } }
-/* честная полоска: заполняется по шагам загрузки (связь → профиль → расписание), блик бежит поверх */
-.boot .bar { position: relative; width: 168px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.22); overflow: hidden; margin-top: 14px; }
-.boot .bar i { display: block; width: 100%; height: 100%; border-radius: 3px; background: #fff; transform-origin: 0 50%; transform: scaleX(var(--bp, .08)); transition: transform .45s var(--e-out); }
-@keyframes bootbob { from { transform: translateY(0) rotate(-3deg) scale(1, 1); } to { transform: translateY(-16px) rotate(3deg) scale(.98, 1.03); } }
-@media (prefers-reduced-motion: reduce) { .boot img, .boot .shd, .boot p.in { animation: none; } .boot .bar i { transition: none; } }
+#bootfx { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* логотип загрузки = «Пара•» из шапки, увеличенный в 76/26 раза: в конце он ровно ложится на место слова в шапке */
+.blogo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.boot .bw { font: 800 76px/1 "Geologica", "Golos", system-ui, sans-serif; letter-spacing: -.03em; display: inline-flex; align-items: center; gap: 17.5px; white-space: nowrap; transform-origin: 0 0; }
+.boot .bl b { display: inline-block; font: inherit; opacity: 0; will-change: transform, opacity; }
+.boot .bw i { width: 26px; height: 26px; border-radius: 50%; background: #FCCAA7; transform: translateY(-23px); opacity: 0; }
+.bball { position: absolute; left: 0; top: 0; width: 80px; height: 80px; margin: -40px 0 0 -40px; border-radius: 50%; background: #FCCAA7; will-change: transform; }
+.boot p { position: absolute; left: 0; right: 0; bottom: calc(44px + env(safe-area-inset-bottom)); margin: 0; padding: 0 24px; text-align: center; font: 600 14px/1.4 "Golos", system-ui, sans-serif; color: rgba(255,225,214,.85); opacity: 0; transition: opacity .5s var(--e-out); }
+.boot p.on { opacity: 1; }
 
 /* ================= движение: плавно, как iOS ================= */
 :root { --e-out: cubic-bezier(.22,1,.36,1); --e-soft: cubic-bezier(.32,.72,0,1); --e-spring: cubic-bezier(.34,1.3,.64,1); }
@@ -1011,7 +1005,7 @@ button:not(:disabled):active, .tile:active { transform: scale(.97); }
   <symbol id="w-storm" viewBox="0 0 24 24"><path d="M6 14h12a4 4 0 0 0 0-8 6 6 0 0 0-11.5 2A3 3 0 0 0 6 14z"/><path d="m13 14-3 4h4l-3 4"/></symbol>
 </svg>
 
-<div class="boot" id="boot" aria-live="polite"><img id="bootimg" src="static/stickers/15.webp" alt=""><span class="shd" aria-hidden="true"></span><span class="bw">Пара</span><p id="bootq">Тяну расписание с ruz.fa.ru…</p><span class="bar"><i></i></span></div>
+<div class="boot" id="boot" role="status" aria-label="Загружаю «Пару»"><canvas id="bootfx" aria-hidden="true"></canvas><div class="blogo" aria-hidden="true"><span class="bw" id="bw"><span class="bl"><b>П</b><b>а</b><b>р</b><b>а</b></span><i id="bdot"></i></span></div><span class="bball" id="bball" aria-hidden="true"></span><p id="bootq"></p></div>
 <div class="minibar" id="minibar" aria-hidden="true"></div>
 <header class="mast"><span class="word">Пара</span><span class="rule" aria-hidden="true"></span><span class="grp hide" id="hdrGroup"></span></header>
 
@@ -1039,29 +1033,112 @@ button:not(:disabled):active, .tile:active { transform: scale(.97); }
 
 <script>
 "use strict";
-/* ---------- экран загрузки ---------- */
+/* ---------- экран загрузки ----------
+   Сценка: кремовая точка прыгает и «печатает» «Пара» по букве, улетает точкой логотипа — хлопок конфетти. Всё — функция времени t,
+   поэтому, если данные пришли раньше, сценку просто ускоряем. В конце логотип перелетает на место «Пара•» в шапке, фон сворачивается в шапку. */
 const BOOT_LINES = ["Тяну расписание с ruz.fa.ru…", "Пересчитываю аудитории…", "Проверяю, не отменили ли пару…", "Ставлю чайник на перемену…", "Учиться, учиться и ещё раз загружаться…", "Верной дорогой идём…"];
-let bootI = 0;
 try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (themePref() === "auto" && !window.Telegram?.WebApp?.colorScheme) applyTheme(); }); } catch (e) {}
-{ const pool = [15, 9, 24, 12, 31, 8, 36, 2, 6, 38], b = document.getElementById("bootimg"); if (b) b.src = `static/stickers/${String(pool[Math.floor(Math.random() * pool.length)]).padStart(2, "0")}.webp`; }
-const bootT = setInterval(() => { const q = document.getElementById("bootq"); if (!q) return;
-  const n = q.cloneNode(false); n.textContent = BOOT_LINES[++bootI % BOOT_LINES.length]; n.className = "in"; q.replaceWith(n); }, 1800);
-const bootStep = (p) => { const b = document.getElementById("boot"); if (b && p > (+b.style.getPropertyValue("--bp") || 0)) b.style.setProperty("--bp", p); };
-/* загрузка закончилась: полоска добегает, красный экран сворачивается в шапку, Ильич подпрыгивает и исчезает */
+const BOOT = (() => {
+  const b = document.getElementById("boot"), cv = document.getElementById("bootfx"); if (!b || !cv) return null;
+  const cx = cv.getContext("2d"), ball = document.getElementById("bball"), dot = document.getElementById("bdot"), word = document.getElementById("bw");
+  const letters = [...b.querySelectorAll(".bl b")], still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const rnd = (a, z) => a + Math.random() * (z - a), pick = (a) => a[Math.floor(Math.random() * a.length)];
+  let W = 0, H = 0, dpr = 1;
+  const fit = () => { dpr = Math.min(2, devicePixelRatio || 1); W = b.clientWidth; H = b.clientHeight; cv.width = W * dpr; cv.height = H * dpr; };
+  fit(); addEventListener("resize", fit);
+  const COLS = ["#FCCAA7", "#FCCAA7", "#F6D3D0", "#F08A8C", "#E85A5F", "#8F171B", "#7A1317", "#FFF1EE"];
+  // как в референсе: немного крупных капсул и кружков ближе к «камере», мелочь и квадратики — дальше и бледнее
+  const piece = (x, y, z) => { const k = Math.random(), sh = k < .38 ? "pill" : k < .8 ? "dot" : "sq", big = z > .9 && Math.random() < .5;
+    return { x, y, z, sh, c: pick(COLS), a: .3 + .65 * z * rnd(.7, 1), r: rnd(0, 6.3), vr: rnd(-.4, .4), sw: rnd(0, 6.3),
+      w: sh === "pill" ? (big ? rnd(18, 26) : rnd(6, 12)) : sh === "dot" ? (big ? rnd(14, 22) : rnd(3, 9)) : rnd(6, 11), l: big ? rnd(56, 90) : rnd(16, 42) }; };
+  const conf = Array.from({ length: 32 }, () => piece(Math.random(), Math.random(), rnd(.35, 1)));
+  const fx = [];  // кольца и осколки хлопка: {kind, x, y, born, ...}
+  const draw1 = (p, x, y, s, a) => {
+    cx.save(); cx.translate(x, y); cx.rotate(p.r); cx.globalAlpha = a; cx.fillStyle = p.c;
+    if (p.sh === "dot") { cx.beginPath(); cx.arc(0, 0, p.w * s, 0, 6.3); cx.fill(); }
+    else if (p.sh === "sq") { const w = p.w * s; cx.fillRect(-w / 2, -w / 2, w, w); }
+    else { const w = p.w * s, l = p.l * s; cx.beginPath(); cx.roundRect ? cx.roundRect(-l / 2, -w / 2, l, w, w / 2) : cx.rect(-l / 2, -w / 2, l, w); cx.fill(); }
+    cx.restore();
+  };
+  // таймлайн (секунды): появление точки, 4 прыжка-буквы, перелёт в точку логотипа
+  const T0 = .3, HOP = .22, TF = T0 + 4 * HOP, FLY = .36, TD = TF + FLY;
+  let t = 0, last = 0, speed = 1, raf = 0, ready = null, boomed = false, geo = null;
+  const measure = () => {
+    // позиции без трансформаций (буквы в этот момент могут быть увеличены, точка сдвинута вверх)
+    const br = b.getBoundingClientRect(), lr = b.querySelector(".blogo").getBoundingClientRect(), ox = lr.left - br.left, oy = lr.top - br.top;
+    const c = (el) => [ox + el.offsetLeft + el.offsetWidth / 2, oy + el.offsetTop, el.offsetWidth, el.offsetHeight];
+    const ls = letters.map(c), d = c(dot), top = Math.min(...ls.map((q) => q[1]));
+    geo = { start: [W / 2, top + ls[0][3] / 2], land: ls.map((q) => [q[0], top - 34]), dot: [d[0], d[1] + d[3] / 2 - 23], dotS: d[2] / 80 };
+  };
+  document.fonts?.ready.then(() => { geo = null; });
+  const easeOut = (u) => 1 - Math.pow(1 - u, 3), back = (u) => 1 + 2.2 * Math.pow(u - 1, 3) + 1.2 * Math.pow(u - 1, 2);
+  const ring = (x, y, r1, life) => fx.push({ k: "ring", x, y, r1, life, born: t });
+  const burst = (x, y) => { ring(x, y, 150, .8);
+    for (let i = 0; i < 30; i++) { const a = rnd(0, 6.3), v = rnd(140, 420), p = piece(0, 0, 1);
+      p.c = pick(["#FCCAA7", "#FFF1EE", "#F6D3D0", "#F08A8C", "#7A1317"]); p.w = Math.min(p.w, 7); p.l = Math.min(p.l, 20);
+      fx.push({ k: "bit", p, x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 120, life: rnd(.9, 1.5), born: t }); } };
+  function scene(dt) {
+    if (!geo) measure();
+    const g = geo; let bx, by, sx = 1, sy = 1, bs = 1;
+    // точка: висит → прыгает по буквам → летит в логотип
+    if (t < T0) { const u = t / T0; bx = g.start[0]; by = g.start[1] - Math.sin(u * Math.PI) * 6; bs = .9 + .1 * easeOut(u); }
+    else if (t < TF) {
+      const i = Math.floor((t - T0) / HOP), u = (t - T0 - i * HOP) / HOP, from = i ? g.land[i - 1] : g.start, to = g.land[i];
+      bx = from[0] + (to[0] - from[0]) * u; by = from[1] + (to[1] - from[1]) * u - Math.sin(u * Math.PI) * 58;
+      const sq = u < .18 ? 1 - u / .18 : u > .86 ? (u - .86) / .14 : 0; sx = 1 + .16 * sq; sy = 1 - .2 * sq;  // сплющивается у «земли»
+    } else if (t < TD) {
+      const u = easeOut((t - TF) / FLY), from = g.land[3], to = g.dot;
+      bx = from[0] + (to[0] - from[0]) * u; by = from[1] + (to[1] - from[1]) * u - Math.sin(u * Math.PI) * 70; bs = 1 + (g.dotS - 1) * u;
+    }
+    if (t < TD) { ball.style.display = ""; ball.style.transform = `translate(${bx}px, ${by}px) scale(${bs * sx}, ${bs * sy})`; }
+    else if (ball.style.display !== "none") { ball.style.display = "none"; dot.style.opacity = 1; if (!boomed) { boomed = true; burst(g.dot[0], g.dot[1]); } }
+    // буквы появляются в момент приземления
+    letters.forEach((el, i) => { const tl = T0 + (i + 1) * HOP, u = (t - tl) / .26;
+      if (u <= 0) { el.style.opacity = 0; return; }
+      if (el.dataset.ring !== "1") { el.dataset.ring = "1"; ring(g.land[i][0], g.land[i][1] + 38, 50, .5); }
+      const k = u >= 1 ? 1 : back(u); el.style.opacity = Math.min(1, u * 3); el.style.transform = u >= 1 ? "" : `translateY(${(1 - k) * 14}px) scale(${.55 + .45 * k})`; });
+    // фон: конфетти медленно всплывают и крутятся
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.clearRect(0, 0, W, H);
+    conf.forEach((p) => { p.y -= dt * .018 * p.z; if (p.y < -.08) { p.y = 1.08; p.x = Math.random(); } p.r += p.vr * dt;
+      draw1(p, p.x * W + Math.sin(t * .6 + p.sw) * 10 * p.z, p.y * H, .6 + .4 * p.z, p.a); });
+    for (let i = fx.length - 1; i >= 0; i--) { const f = fx[i], age = t - f.born, u = age / f.life; if (u >= 1) { fx.splice(i, 1); continue; }
+      if (f.k === "ring") { cx.beginPath(); cx.arc(f.x, f.y, f.r1 * easeOut(u), 0, 6.3); cx.lineWidth = 2; cx.strokeStyle = `rgba(255,214,196,${.75 * (1 - u)})`; cx.stroke(); }
+      else { f.vy += 520 * dt; f.vx *= .985; f.x += f.vx * dt; f.y += f.vy * dt; f.p.r += 6 * dt; draw1(f.p, f.x, f.y, 1, 1 - u * u); } }
+  }
+  function frame(now) {
+    const dt = Math.min(.05, (now - (last || now)) / 1000); last = now; t += dt * speed; scene(dt * speed);
+    if (ready && t >= TD) { const go = ready; ready = null; go(); }
+    raf = requestAnimationFrame(frame);
+  }
+  if (still) { t = TD + 1; boomed = true; requestAnimationFrame(() => { measure(); scene(0); }); }
+  else raf = requestAnimationFrame(frame);
+  let qi = 0; const qT = setInterval(() => { const q = document.getElementById("bootq"); if (!q) return; q.textContent = BOOT_LINES[qi++ % BOOT_LINES.length]; q.classList.add("on"); }, 2600);
+  return {
+    // данные готовы: доигрываем сценку (быстро) и уходим
+    finish(cb) { clearInterval(qT); if (still || t >= TD) return cb(); speed = 3.2; ready = cb; },
+    stop() { cancelAnimationFrame(raf); removeEventListener("resize", fit); },
+    word, cv,
+  };
+})();
 function bootDone() {
   const b = document.getElementById("boot"); if (!b || b.dataset.out) return;
-  b.dataset.out = "1"; clearInterval(bootT); bootStep(1);
-  const plain = () => { b.classList.add("off"); setTimeout(() => b.remove(), 450); };
-  if (REDUCE || !b.animate) return plain();
-  b.style.pointerEvents = "none";
-  setTimeout(() => {  // даём полоске добежать
+  b.dataset.out = "1"; b.style.pointerEvents = "none";
+  const out = () => {
+    const plain = () => { b.classList.add("off"); setTimeout(() => { BOOT?.stop(); b.remove(); }, 350); };
+    if (REDUCE || !b.animate || !BOOT) return plain();
     const top = document.body.classList.contains("hero-on") && $("#hero") ? $("#hero").getBoundingClientRect().bottom : $(".mast").getBoundingClientRect().bottom;
     const cut = Math.max(0, innerHeight - Math.max(60, Math.min(top, innerHeight * .6)));
-    b.querySelectorAll("img, .shd, .bw, p, .bar").forEach((x) => x.animate([{ opacity: 1 }, { opacity: 0, transform: "translateY(-12px)", filter: "blur(4px)" }], { duration: 180, easing: "cubic-bezier(.4,0,1,1)", fill: "forwards" }));
-    const a = b.animate([{ clipPath: "inset(0 0 0 0 round 0)" }, { clipPath: `inset(0 0 ${cut}px 0 round 0 0 28px 28px)`, opacity: 1, offset: .75 }, { clipPath: `inset(0 0 ${cut}px 0 round 0 0 28px 28px)`, opacity: 0 }],
-      { duration: 420, delay: 60, easing: EASE.soft, fill: "forwards" });
-    a.onfinish = () => b.remove();
-  }, 120);
+    // «Пара•» перелетает на своё место в шапке (там такое же слово, только мельче)
+    const hw = $(".mast .word"), wr = BOOT.word.getBoundingClientRect(), hr = hw?.getBoundingClientRect();
+    if (hr && hr.width) BOOT.word.animate([{ transform: "none" }, { transform: `translate(${hr.left - wr.left}px, ${hr.top - wr.top}px) scale(${hr.width / wr.width})` }],
+      { duration: 520, easing: EASE.soft, fill: "forwards" });
+    BOOT.cv.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: "forwards" });
+    b.querySelector("p")?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 150, fill: "forwards" });
+    const a = b.animate([{ clipPath: "inset(0 0 0 0 round 0)" }, { clipPath: `inset(0 0 ${cut}px 0 round 0 0 28px 28px)`, opacity: 1, offset: .8 }, { clipPath: `inset(0 0 ${cut}px 0 round 0 0 28px 28px)`, opacity: 0 }],
+      { duration: 600, easing: EASE.soft, fill: "forwards" });
+    a.onfinish = () => { BOOT.stop(); b.remove(); };
+  };
+  BOOT ? BOOT.finish(out) : out();
 }
 setTimeout(bootDone, 15000);
 const tg = window.Telegram && window.Telegram.WebApp;
@@ -1400,7 +1477,7 @@ async function openDay(date) {
     if (date === S.today && !S.home) jobs.push(api("/api/home").then((h) => { S.home = h; if (!h._stale) clockOffset = Date.parse(h.now) - Date.now(); }));
     if (date === S.today && !S.feed) jobs.push(api("/api/feed").then((f) => { S.feed = f; }).catch(() => {}));
     if (date === S.today && !S.study) jobs.push(api("/api/study").then((r) => { S.study = r.sets; }).catch(() => {}));
-    bootStep(.75); await Promise.all(jobs);
+    await Promise.all(jobs);
   } catch (e) { fail(e); }
   if (S.tab === "day" && S.date === date) renderDay();
 }
@@ -3321,12 +3398,11 @@ function start() {
   try { tg?.ready(); tg?.expand(); tg?.disableVerticalSwipes?.(); tg?.onEvent?.("themeChanged", applyTheme); tg?.BackButton?.onClick(goBack); } catch (e) {}
   const fatal = (title, text, retry = false) => { bootDone(); $("main").innerHTML = `<div class="empty"><img class="stk" src="static/stickers/11.webp" alt=""><div class="big">${title}</div><p>${text}</p>${retry ? `<button class="btn" onclick="location.reload()" style="margin-top:18px">ещё раз</button>` : ""}</div>`; $(".tabbar").classList.add("hide"); };
   if (!tg?.initData && !DEV_USER) return fatal("Открой через меню", "Нажми кнопку «Приложение» слева от поля ввода в чате с ботом — так Telegram передаёт, кто ты.");
-  bootStep(.15); resolveApi().then(() => bootStep(.35), () => {});
   const boot0 = api("/api/bootstrap");
   // данные дня просим сразу, не дожидаясь профиля: минус один круг через туннель (openDay подхватит эти же запросы)
   if (cget("/api/bootstrap")?.me?.onboarded !== false) { const ws = monday(mskToday());
     [`/api/days?start=${ws}&end=${addDays(ws, 6)}`, "/api/checklist", "/api/home", "/api/feed", "/api/study"].forEach((p) => api(p).catch(() => {})); }
-  try { const b = await boot0; bootStep(.62); S.me = b.me; S.today = b._stale ? mskToday() : b.today; if (!b._stale) clockOffset = Date.parse(b.now) - Date.now(); }
+  try { const b = await boot0; S.me = b.me; S.today = b._stale ? mskToday() : b.today; if (!b._stale) clockOffset = Date.parse(b.now) - Date.now(); }
   catch (e) { return fatal("Нет связи", e.status === 401 ? "Сессия устарела. Закрой приложение и открой его заново." : "Не удалось подключиться. Проверь интернет.", e.status !== 401); }
   if (!S.me.onboarded || !S.me.group) { $("#onb").classList.add("on"); return onbIntro(); }
   start();
