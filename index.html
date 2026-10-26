@@ -1035,7 +1035,7 @@ button:not(:disabled):active, .tile:active { transform: scale(.97); }
 "use strict";
 /* ---------- экран загрузки ----------
    Сценка: кремовая точка прыгает и «печатает» «Пара» по букве, улетает точкой логотипа — хлопок конфетти. Всё — функция времени t,
-   поэтому, если данные пришли раньше, сценку просто ускоряем. В конце логотип перелетает на место «Пара•» в шапке, фон сворачивается в шапку. */
+   данные пришли раньше — сценка всё равно доигрывается до хлопка. В конце логотип перелетает на место «Пара•» в шапке, фон сворачивается в шапку. */
 const BOOT_LINES = ["Тяну расписание с ruz.fa.ru…", "Пересчитываю аудитории…", "Проверяю, не отменили ли пару…", "Ставлю чайник на перемену…", "Учиться, учиться и ещё раз загружаться…", "Верной дорогой идём…"];
 try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (themePref() === "auto" && !window.Telegram?.WebApp?.colorScheme) applyTheme(); }); } catch (e) {}
 const BOOT = (() => {
@@ -1061,8 +1061,8 @@ const BOOT = (() => {
     cx.restore();
   };
   // таймлайн (секунды): появление точки, 4 прыжка-буквы, перелёт в точку логотипа
-  const T0 = .3, HOP = .22, TF = T0 + 4 * HOP, FLY = .36, TD = TF + FLY;
-  let t = 0, last = 0, speed = 1, raf = 0, ready = null, boomed = false, geo = null;
+  const T0 = .55, HOP = .3, TF = T0 + 4 * HOP, FLY = .45, TD = TF + FLY, HOLD = .35;  // темп как в референсе: ~2,2 с до логотипа
+  let t = 0, last = 0, raf = 0, ready = null, boomed = false, geo = null;
   const measure = () => {
     // позиции без трансформаций (буквы в этот момент могут быть увеличены, точка сдвинута вверх)
     const br = b.getBoundingClientRect(), lr = b.querySelector(".blogo").getBoundingClientRect(), ox = lr.left - br.left, oy = lr.top - br.top;
@@ -1106,16 +1106,16 @@ const BOOT = (() => {
       else { f.vy += 520 * dt; f.vx *= .985; f.x += f.vx * dt; f.y += f.vy * dt; f.p.r += 6 * dt; draw1(f.p, f.x, f.y, 1, 1 - u * u); } }
   }
   function frame(now) {
-    const dt = Math.min(.05, (now - (last || now)) / 1000); last = now; t += dt * speed; scene(dt * speed);
-    if (ready && t >= TD) { const go = ready; ready = null; go(); }
+    const dt = Math.min(.05, (now - (last || now)) / 1000); last = now; t += dt; scene(dt);
+    if (ready && t >= TD + HOLD) { const go = ready; ready = null; go(); }
     raf = requestAnimationFrame(frame);
   }
   if (still) { t = TD + 1; boomed = true; requestAnimationFrame(() => { measure(); scene(0); }); }
   else raf = requestAnimationFrame(frame);
   let qi = 0; const qT = setInterval(() => { const q = document.getElementById("bootq"); if (!q) return; q.textContent = BOOT_LINES[qi++ % BOOT_LINES.length]; q.classList.add("on"); }, 2600);
   return {
-    // данные готовы: доигрываем сценку (быстро) и уходим
-    finish(cb) { clearInterval(qT); if (still || t >= TD) return cb(); speed = 3.2; ready = cb; },
+    // данные готовы: доигрываем сценку в обычном темпе (пользователю она нравится целиком) и уходим
+    finish(cb) { clearInterval(qT); if (still || t >= TD + HOLD) return cb(); ready = cb; },
     stop() { cancelAnimationFrame(raf); removeEventListener("resize", fit); },
     word, cv,
   };
@@ -2546,9 +2546,12 @@ function lessonSheet(oid, date) {
 }
 function parSheet(date, i) {
   const s = S.days[date]?.slots[+i]; if (!s) return;
-  openSheet(`<h4>Какая пара твоя?</h4><div class="muted tiny">${short(date)}, ${s.lessons[0].begin}–${s.lessons[0].end}. Остальные варианты скроются — и на следующих неделях тоже.</div>
-    <div style="margin-top:12px">${s.lessons.map((l) => `<div class="opt"><div class="grow"><b>${esc(l.contingent || l.discipline)}</b>
-      <span class="muted tiny">${esc(l.discipline)} · ауд ${esc(audNo(l.auditorium))} · ${esc(l.lecturer || "")}</span></div>
+  // выбирают по преподавателю: он — главная строка; поток и аудитория — мелко
+  const byT = new Set(s.lessons.map((l) => l.lecturer_full || l.lecturer)).size === s.lessons.length;
+  const ls = byT ? [...s.lessons].sort((a, b) => (a.lecturer_full || a.lecturer || "").localeCompare(b.lecturer_full || b.lecturer || "", "ru")) : s.lessons;
+  openSheet(`<h4>${byT ? "Кто твой преподаватель?" : "Какая пара твоя?"}</h4><div class="muted tiny">${esc(s.lessons[0].discipline)} · ${short(date)}, ${s.lessons[0].begin}–${s.lessons[0].end}. Пары других групп по предмету скроются — во все дни.</div>
+    <div style="margin-top:12px">${ls.map((l) => `<div class="opt"><div class="grow"><b>${esc(byT ? l.lecturer_full || l.lecturer : l.contingent || l.discipline)}</b>
+      <span class="muted tiny">${esc(byT ? l.contingent || l.discipline : l.discipline)} · ауд ${esc(audNo(l.auditorium))}${byT ? "" : ` · ${esc(l.lecturer || "")}`}</span></div>
       ${S.days[date].editable ? `<button class="btn sm" data-act="pick" data-oid="${l.oid}">моя</button>` : ""}</div>`).join("")}</div>`);
 }
 
@@ -2829,7 +2832,9 @@ function meSec(sec) {
       ${d.items.length ? `<div class="items">${d.items.map((it) => `<span class="item">${esc(it.text)}<button data-act="delitem" data-id="${it.id}" aria-label="Удалить">${icon("x")}</button></span>`).join("")}</div>` : `<div class="muted tiny" style="margin-top:4px">Пока напомню про форму и кроссовки</div>`}
       <form class="add" data-form="item" data-idx="${i}"><input class="input" name="t" placeholder="Полотенце, вода" autocomplete="off" aria-label="Что взять на ${esc(d.name)}"><button class="btn" aria-label="Добавить">${icon("plus")}</button></form></div>`).join("")
       : `<div class="note">В ближайшие две недели физры нет. По умолчанию напомню про форму и кроссовки.</div>`),
-    hidden: () => `<h4>Скрытые пары</h4>` + (!S.hidden ? `<div class="skel"></div>` : S.hidden.length ? S.hidden.map((r) => `<div class="set"><div class="l"><b>${esc(r.discipline || "Все пары типа «" + r.kind + "»")}</b>
+    hidden: () => `<h4>Скрытые пары</h4>` + (!S.hidden ? `<div class="skel"></div>` : S.hidden.length ? S.hidden.map((r) => r.only
+      ? `<div class="set"><div class="l"><b>${esc(r.discipline)}</b><span>мой поток: ${esc(r.contingent || "")} · остальные скрыты</span></div><button class="btn sm ghost" data-act="unhide" data-id="${r.id}">Сбросить</button></div>`
+      : `<div class="set"><div class="l"><b>${esc(r.discipline || "Все пары типа «" + r.kind + "»")}</b>
       <span>${[r.discipline && r.kind, r.contingent].filter(Boolean).map(esc).join(" · ") || "все занятия"}</span></div><button class="btn sm ghost" data-act="unhide" data-id="${r.id}">Вернуть</button></div>`).join("")
       : `<div class="note">Ничего не скрыто. Чтобы скрыть пару, нажми на неё в расписании.</div>`),
     more: () => `<h4>Календарь и погода</h4>
@@ -3300,7 +3305,7 @@ document.addEventListener("click", async (e) => {
   }
   if (act === "stbar") { hsel(); document.querySelectorAll(".stbar.on").forEach((x) => x.classList.remove("on")); a.classList.add("on"); $("#sttip").textContent = a.dataset.tip; return; }
   if (act === "stats-reload") { haptic(); S.stats = undefined; return meSec("stats"); }
-  if (act === "unhide") { try { await api(`/api/hidden/${a.dataset.id}`, { method: "DELETE" }); toast("Вернул"); invalidate(); S.hidden = (await api("/api/hidden")).rules; await ensureChecklist(); renderMe(); } catch (er) { fail(er); } return; }
+  if (act === "unhide") { if (a.disabled) return; a.disabled = true; try { await api(`/api/hidden/${a.dataset.id}`, { method: "DELETE" }); toast("Вернул"); invalidate(); S.hidden = (await api("/api/hidden")).rules; await ensureChecklist(); renderMe(); } catch (er) { fail(er); } return; }
   if (act === "loc") return requestLocation();
   if (act === "loc-reset") { S.me.location = false; queueSave({ location: null }); renderMe(); return; }
   const ft = t.closest("[data-ftype]"); if (ft) { S.find.type = ft.dataset.ftype; S.find.items = []; renderFind(); if (ft.dataset.ftype !== "free") runSearch(); return; }
